@@ -2127,7 +2127,7 @@
               keys: [
                 "boxInfo", "animalHp", "animalAggroZones", "showFPS", 
                 "craftTimer", "questTimer", "percentages", "showSpeed",
-                "leaderboardLevels", "leaderboardAllies", "joinsLeaves", "joinsLeavesMode", "killQuestFeed",
+                "leaderboardLevels", "leaderboardAllies", "joinsLeaves", "joinsLeavesMode",
                 "totemOnMap", "deathOnMap", "showGhostTimer", "hoodGhostNames",
                 "playerOnTop", "showMaxId", "simpleInventory", "boxesOnTop", "chestsOnTop",
                 "treasureOnTop", "movementPredictor", "fireInfo", "buildingInfo",
@@ -2182,7 +2182,7 @@
                 "voiceAndChatEnabled", "autoRespawn", "autoTotem", "autoTame",
                 "autoHat", "autoDiving", "autoLand", "equipAfterPlace",
                 "autoCrown", "autoBook", "autoIce", "autoIceMode", "smartOppositeKeys", "autoUnlock",
-                               "lockAngle", "putToChest", "putToFurnace", "furnaceWarning",
+                               "lockAngle", "putToChest", "putToChestLabel", "putToFurnace", "furnaceWarning",
                 "autoClicker", "autoClickerCps", "organiseChests", "selectiveChests"
               ]
             },
@@ -5928,7 +5928,6 @@ STORAGE_KEY = "azon_settings",
                   createToggle("leaderboardAllies", "Leaderboard Allies"),
                   createToggle("joinsLeaves", "Joins & Leaves"),
                   createDropdown("joinsLeavesMode", "Joins & Leaves Style", ["New", "Old"]),
-                  createToggle("killQuestFeed", "Kill & Quest Feed"),
                   createToggle("totemOnMap", "Totem On Map"),
                   createToggle("totemLabelOnMap", "Totem Label"),
                   createToggle("deathOnMap", "Death On Map"),
@@ -6233,6 +6232,7 @@ GUI_TAB_MAIN = {
                 icon: "●",
                 settings: [
                   { type: "slider", key: "putToChest", label: "Put To Chest", min: 10, max: 8000, defaultValue: 10 },
+                  { type: "checkbox", key: "putToChestLabel", label: "Show Put To Chest Label", defaultValue: true, tip: "Show the Put To Chest panel at the top of the screen when you stand next to a chest (not for furnaces, windmills, etc.)." },
                   { type: "slider", key: "putToFurnace", label: "Put To Furnace", min: 10, max: 15000, defaultValue: 10 },
                   { type: "label", key: "furnaceWarning", value: "Don't set it above 60k, or there will be lag." }
                 ]
@@ -7894,6 +7894,7 @@ Token link: ${tokenLink}`;
                 settings: [
                   createToggle("teamInv", "Team Inventory"),
                   createToggle("teamHp", "Team HP"),
+                  createToggle("teamLimit", "Limit"),
                   createToggle("realNick", "Real Nick")
                 ]
               }
@@ -8170,7 +8171,6 @@ GUI_CONFIG = {
         undefined === this.runtime.tokenWebhookUrl && (this.runtime.tokenWebhookUrl = "");  
         undefined === this.runtime.defensePingEveryone && (this.runtime.defensePingEveryone = true);
         
-        undefined === this.runtime.killQuestFeed && (this.runtime.killQuestFeed = false);
         // Настройки Heuristics
         undefined === this.runtime.defenseAttackerInfo && (this.runtime.defenseAttackerInfo = true);
         undefined === this.runtime.defensePlayerCountInfo && (this.runtime.defensePlayerCountInfo = true);
@@ -8193,6 +8193,7 @@ GUI_CONFIG = {
   ? (this.runtime.weaponCooldown = "Off")
   : null;
         undefined === this.runtime.teamHp && (this.runtime.teamHp = true);
+        undefined === this.runtime.teamLimit && (this.runtime.teamLimit = true);
         undefined === this.runtime.autoFarmDropEnabled && (this.runtime.autoFarmDropEnabled = false); undefined === this.runtime.autoFarmWhitelist && (this.runtime.autoFarmWhitelist = "");
         undefined === this.runtime.farmHpAt && (this.runtime.farmHpAt = 80);
         undefined === this.runtime.farmColdAt && (this.runtime.farmColdAt = 10);
@@ -8225,7 +8226,7 @@ GUI_CONFIG = {
         undefined === this.runtime.convertTomatoKey && (this.runtime.convertTomatoKey = "NONE");
         undefined === this.runtime.convertThornbushKey && (this.runtime.convertThornbushKey = "NONE");
         undefined === this.runtime.pathFinderX && (this.runtime.pathFinderX = "-1");
-        undefined === this.runtime.pathFinderY && (this.runtime.pathFinderY = "-1"); undefined === this.runtime.guiMovable && (this.runtime.guiMovable = false), undefined === this.runtime.putToChest && (this.runtime.putToChest = 10);undefined === this.runtime.putToFurnace && (this.runtime.putToFurnace = 255); undefined === this.runtime.guiResizable && (this.runtime.guiResizable = false),undefined === this.runtime.randomNick && (this.runtime.randomNick = false), undefined === this.runtime.guiPosX && (this.runtime.guiPosX = null), undefined === this.runtime.guiPosY && (this.runtime.guiPosY = null), undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null), undefined === this.runtime.guiSidebarWidth && (this.runtime.guiSidebarWidth = null),undefined === this.runtime.guiColor && (this.runtime.guiColor = "#3b82f6"); undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null),undefined === this.runtime.leaderboardAllies && (this.runtime.leaderboardAllies = true), undefined === this.runtime.guiHeight && (this.runtime.guiHeight = null), undefined === this.runtime.guiFontSize && (this.runtime.guiFontSize = null),undefined === this.runtime.playerRadar && (this.runtime.playerRadar = true),undefined === this.runtime.unitDebugger && (this.runtime.unitDebugger = "None"); undefined === this.runtime.autoIceMode && (this.runtime.autoIceMode = "Heal"); undefined === this.runtime.extractorFuel && (this.runtime.extractorFuel = "Wood"); undefined === this.runtime.guiOpacity && (this.runtime.guiOpacity = 100);
+        undefined === this.runtime.pathFinderY && (this.runtime.pathFinderY = "-1"); undefined === this.runtime.guiMovable && (this.runtime.guiMovable = false), undefined === this.runtime.putToChest && (this.runtime.putToChest = 10); undefined === this.runtime.putToChestLabel && (this.runtime.putToChestLabel = true);undefined === this.runtime.putToFurnace && (this.runtime.putToFurnace = 255); undefined === this.runtime.guiResizable && (this.runtime.guiResizable = false),undefined === this.runtime.randomNick && (this.runtime.randomNick = false), undefined === this.runtime.guiPosX && (this.runtime.guiPosX = null), undefined === this.runtime.guiPosY && (this.runtime.guiPosY = null), undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null), undefined === this.runtime.guiSidebarWidth && (this.runtime.guiSidebarWidth = null),undefined === this.runtime.guiColor && (this.runtime.guiColor = "#3b82f6"); undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null),undefined === this.runtime.leaderboardAllies && (this.runtime.leaderboardAllies = true), undefined === this.runtime.guiHeight && (this.runtime.guiHeight = null), undefined === this.runtime.guiFontSize && (this.runtime.guiFontSize = null),undefined === this.runtime.playerRadar && (this.runtime.playerRadar = true),undefined === this.runtime.unitDebugger && (this.runtime.unitDebugger = "None"); undefined === this.runtime.autoIceMode && (this.runtime.autoIceMode = "Heal"); undefined === this.runtime.extractorFuel && (this.runtime.extractorFuel = "Wood"); undefined === this.runtime.guiOpacity && (this.runtime.guiOpacity = 100);
         for (const e of ["farmTLX", "farmTLY", "farmBRX", "farmBRY", "farmSX", "farmSY", "totemX", "totemY", "deathX", "deathY"]) {
           undefined === this.runtime[e] && (this.runtime[e] = 0);
         }
@@ -8489,7 +8490,6 @@ GUI_CONFIG = {
         unitDebugger: true,
         buildingInfo: true,
         buildingDebugger: false,
-       killQuestFeed: true,
         buildingInfo: true,
         changelog: true,
         chests: true,
@@ -8505,6 +8505,7 @@ GUI_CONFIG = {
         fog: true,
        teamInv: true,
         teamHp: true,
+        teamLimit: true,
         realNick: true, // <--- Разрешаем отображение настройки
         ghostTimer: true,
         hiddenMode: true,
@@ -13806,8 +13807,8 @@ class Feature_PutToChest extends CheatFeatureBase {
           if (!this._ensureBar()) return;
           const u = this.main.user;
           const chestOpen = !!(u && u.chest && u.chest.open);
-          const furnaceOpen = !!(u && u.furnace && u.furnace.open);
-          const kind = chestOpen ? "chest" : furnaceOpen ? "furnace" : null;
+          const labelOn = this.main.SettingsManager.get("putToChestLabel") !== false;
+          const kind = chestOpen && labelOn ? "chest" : null;
           const sockOk = this.main.client?.socket?.readyState === 1;
           const want = !!kind && sockOk && !this.main.hidden && this.main.is_game_running();
           const shown = this._bar.classList.contains("show");
@@ -15869,309 +15870,6 @@ class Feature_MarketBinds extends CheatFeatureBase {
         }
       }
     }
-    class Feature_KillQuestFeed extends CheatFeatureBase {
-      static id = "killQuestFeed";
-      static category = Ve;
-      static enabled = true;
-
-      // Очки за крафт дорогих предметов (>= 3000) и награды за квесты в Starve.io
-      static SCORE_TABLE = [
-        { score: 15000, type: "quest", label: "claimed a high-tier Quest (+15k) / Lava Gear" },
-        { score: 12000, type: "craft", label: "crafted Lava Sword / Lava Spear / Lava Helmet" },
-        { score: 10000, type: "quest", label: "claimed a Quest (+10k) or crafted Dragon Gear" },
-        { score: 9000,  type: "craft", label: "crafted Dragon Helmet / Dragon Sword" },
-        { score: 8000,  type: "craft", label: "crafted Crown (Green / Blue / Orange) or Dragon Spear" },
-        { score: 7500,  type: "craft", label: "crafted Super Hammer / Super Diving Suit" },
-        { score: 6000,  type: "craft", label: "crafted Reidite Helmet / Reidite Sword / Bow" },
-        { score: 5000,  type: "quest", label: "claimed a Quest (+5k) or crafted Amethyst Gear" },
-        { score: 4500,  type: "craft", label: "crafted Reidite Spear / Amethyst Helmet" },
-        { score: 4000,  type: "craft", label: "crafted Amethyst Sword / Reidite Hammer" },
-        { score: 3500,  type: "craft", label: "crafted Crab Crown / Pirate Sword" },
-        { score: 3000,  type: "craft", label: "crafted Diamond Gear / Amethyst Spear (+3k)" }
-      ];
-
-      constructor(t) {
-        super(t);
-        this._prevBoard = new Map();     // pid -> { name, score, level, ts }
-        this._knownScores = new Map();   // pid -> { name, score, ts } (история очков всех, кто бывал в топ-10)
-        this._recentDeaths = [];         // [{ pid, name, score, ts }]
-        this._feed = [];                 // [{ text, sub, color, ts }]
-        this._socketHooked = null;
-      }
-
-      init() {
-        super.init();
-
-        // 1. Перехватываем kill_player, чтобы знать, кто именно умер в мире в этот момент
-        if (typeof this.main.client?.kill_player === "function") {
-          const origKillPlayer = this.main.client.kill_player;
-          this.main.client.kill_player = (pid, ...rest) => {
-            this._onPlayerKilled(pid);
-            return origKillPlayer.call(this.main.client, pid, ...rest);
-          };
-        }
-
-        // 2. Сброс состояния при перезаходе на сервер
-        const origHandshake = this.main.client.handshake;
-        this.main.client.handshake = (...args) => {
-          this._prevBoard.clear();
-          this._knownScores.clear();
-          this._recentDeaths = [];
-          this._feed = [];
-          return origHandshake.apply(this.main.client, args);
-        };
-
-        // 3. Отрисовка ленты событий слева на экране
-        const origDrawUI = this.main.game.draw_UI;
-        this.main.game.draw_UI = (...args) => {
-          this._ensureSocketListener();
-          origDrawUI.apply(this.main.game, args);
-          this.draw(this.main.ctx);
-        };
-      }
-
-      _ensureSocketListener() {
-        const sock = this.main.client?.socket;
-        if (!sock || this._socketHooked === sock) return;
-        this._socketHooked = sock;
-
-        sock.addEventListener("message", (ev) => {
-          if (!this.enabled || typeof ev.data !== "string" || !ev.data.startsWith("[")) return;
-          try {
-            const pkt = JSON.parse(ev.data);
-            if (!Array.isArray(pkt)) return;
-            // LDB_IDX = 4 — пакет обновления таблицы лидеров
-            const board = pkt[LDB_IDX];
-            if (Array.isArray(board) && board.length > 0 && board.every(validateLdbEntry)) {
-              this._processLeaderboard(board);
-            }
-          } catch (e) {}
-        });
-      }
-
-      _getPlayerNickById(pid) {
-        if (this._knownScores.has(pid)) return this._knownScores.get(pid).name;
-        const pInfo = this.main.world?.players?.[pid];
-        if (pInfo && typeof pInfo === "object") {
-          const firstVal = Object.values(pInfo)[0];
-          if (typeof firstVal === "string" && firstVal.length > 0) return firstVal;
-          if (typeof pInfo.nickname === "string" && pInfo.nickname.length > 0) return pInfo.nickname;
-        }
-        return `Player #${pid}`;
-      }
-
-      _onPlayerKilled(pid) {
-        if (pid == null) return;
-        const now = Date.now();
-        const name = this._getPlayerNickById(pid);
-        const known = this._knownScores.get(pid);
-        // Если игрок был в топ-10, мы знаем его точный счёт; иначе оцениваем по уровню в world.players
-        let score = known ? known.score : 0;
-        if (!score) {
-          const lvl = this.main.world?.players?.[pid]?.level || 0;
-          if (lvl > 0) score = lvl * 1500;
-        }
-
-        this._recentDeaths.push({ pid, name, score, ts: now });
-        this._recentDeaths = this._recentDeaths.filter(d => now - d.ts < 8000);
-      }
-
-      // Перевод значения p из пакета лидерборда в реальные очки
-      // В Starve.io пакет лидерборда передает p (если p < 1000 и уровень высокий — очки могут быть сжаты, но в стандартном протоколе p — реальное число очков)
-      _normalizeScore(entry) {
-        return Number(entry.p) || 0;
-      }
-
-      _processLeaderboard(board) {
-        const now = Date.now();
-        const currentMap = new Map();
-
-        // Очищаем устаревшие записи о смертях старше 8 секунд
-        this._recentDeaths = this._recentDeaths.filter(d => now - d.ts < 8000);
-
-        // 1. Проверяем, кто внезапно исчез из топ-10 (возможная жертва убийства)
-        const newIds = new Set(board.map(e => e.i));
-        for (const [oldId, oldData] of this._prevBoard.entries()) {
-          if (!newIds.has(oldId)) {
-            // Если самый слабый в топ-10 сейчас имеет меньше очков, чем было у пропавшего игрока — значит пропавший умер или вышел
-            const lowestScoreNow = board.reduce((min, e) => Math.min(min, this._normalizeScore(e)), Infinity);
-            if (oldData.score > lowestScoreNow + 500) {
-              const alreadyRecorded = this._recentDeaths.some(d => d.pid === oldId);
-              if (!alreadyRecorded) {
-                this._recentDeaths.push({
-                  pid: oldId,
-                  name: oldData.name,
-                  score: oldData.score,
-                  ts: now
-                });
-              }
-            }
-          }
-        }
-
-        // 2. Анализируем скачки очков >= 3000 у игроков в топ-10
-        for (const entry of board) {
-          const pid = entry.i;
-          const name = String(entry.n || "Player").trim();
-          const score = this._normalizeScore(entry);
-          const level = entry.l;
-
-          currentMap.set(pid, { name, score, level, ts: now });
-          this._knownScores.set(pid, { name, score, ts: now });
-
-          const prev = this._prevBoard.get(pid);
-          if (!prev) continue;
-
-          const delta = score - prev.score;
-          if (delta >= 3000) {
-            this._classifyScoreJump(pid, name, delta, score, now);
-          }
-        }
-
-        this._prevBoard = currentMap;
-      }
-
-      _classifyScoreJump(pid, name, delta, newScore, now) {
-        // А) Проверяем, совпадает ли скачок с ~15% от очков недавно умершего игрока
-        // Убийство дает ~15% от счета жертвы (поэтому жертва должна была иметь примерно delta / 0.15 очков)
-        const expectedVictimScore = Math.round(delta / 0.15);
-
-        let matchedVictimIdx = -1;
-        let bestDiffRatio = 0.28; // Допуск 28% (на случай попутного крафта/еды/ударов)
-
-        for (let i = 0; i < this._recentDeaths.length; i++) {
-          const victim = this._recentDeaths[i];
-          if (victim.pid === pid) continue;
-
-          if (victim.score > 0) {
-            const ratioDiff = Math.abs(victim.score - expectedVictimScore) / expectedVictimScore;
-            if (ratioDiff < bestDiffRatio) {
-              bestDiffRatio = ratioDiff;
-              matchedVictimIdx = i;
-            }
-          } else {
-            // Если точный счет жертвы неизвестен, но она умерла только что (< 3.5 сек назад)
-            if (now - victim.ts <= 3500) {
-              matchedVictimIdx = i;
-              break;
-            }
-          }
-        }
-
-        if (matchedVictimIdx !== -1) {
-          const victim = this._recentDeaths.splice(matchedVictimIdx, 1)[0];
-          this._pushFeed(
-            `⚔️ ${name} killed ${victim.name}`,
-            `+${delta.toLocaleString()} pts (~15% of ${expectedVictimScore.toLocaleString()})`,
-            "#f87171"
-          );
-          return;
-        }
-
-        // Б) Проверяем совпадение с наградой за квест или дорогим крафтом из таблицы
-        let bestMatch = null;
-        let minDiff = Infinity;
-        for (const item of Feature_KillQuestFeed.SCORE_TABLE) {
-          const diff = Math.abs(delta - item.score);
-          if (diff <= 650 && diff < minDiff) {
-            minDiff = diff;
-            bestMatch = item;
-          }
-        }
-
-        if (bestMatch) {
-          if (bestMatch.type === "quest") {
-            this._pushFeed(
-              `🏆 ${name} ${bestMatch.label}`,
-              `+${delta.toLocaleString()} pts (Total: ${newScore.toLocaleString()})`,
-              "#facc15"
-            );
-          } else {
-            this._pushFeed(
-              `🔨 ${name} ${bestMatch.label}`,
-              `+${delta.toLocaleString()} pts (Total: ${newScore.toLocaleString()})`,
-              "#60a5fa"
-            );
-          }
-          return;
-        }
-
-        // В) Если никто из известных не умирал рядом, но скачок нестандартный — вероятное убийство игрока вне топ-10 или серия крафтов
-        this._pushFeed(
-          `⚡ ${name} gained +${delta.toLocaleString()} pts`,
-          `Likely killed a ~${expectedVictimScore.toLocaleString()} pt player or bulk-crafted`,
-          "#fb923c"
-        );
-      }
-
-      _pushFeed(text, sub, color) {
-        this._feed.unshift({
-          text,
-          sub,
-          color,
-          ts: Date.now()
-        });
-        if (this._feed.length > 7) {
-          this._feed.length = 7;
-        }
-      }
-
-      draw(ctx) {
-        if (!this.enabled || this.main.hidden || !ctx || !this.main.is_game_running()) return;
-
-        const now = Date.now();
-        // Держим уведомления на экране 12 секунд
-        this._feed = this._feed.filter(item => now - item.ts < 12000);
-        if (this._feed.length === 0) return;
-
-        const startX = 16;
-        let curY = 140;
-
-        ctx.save();
-        for (let i = 0; i < this._feed.length; i++) {
-          const item = this._feed[i];
-          const age = now - item.ts;
-          const alpha = age > 10000 ? Math.max(0, 1 - (age - 10000) / 2000) : 1;
-
-          ctx.globalAlpha = alpha;
-          ctx.font = "bold 15px 'Baloo Paaji', sans-serif";
-          const mainW = ctx.measureText(item.text).width;
-          ctx.font = "12px 'Baloo Paaji', sans-serif";
-          const subW = ctx.measureText(item.sub).width;
-
-          const boxW = Math.max(mainW, subW) + 22;
-          const boxH = 42;
-
-          // Темная полупрозрачная подложка
-          ctx.fillStyle = "rgba(11, 14, 20, 0.82)";
-          ctx.strokeStyle = item.color;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.roundRect ? ctx.roundRect(startX, curY, boxW, boxH, 6) : ctx.rect(startX, curY, boxW, boxH);
-          ctx.fill();
-          ctx.stroke();
-
-          // Основная строка (кто убил / что скрафтил)
-          ctx.font = "bold 15px 'Baloo Paaji', sans-serif";
-          ctx.textAlign = "left";
-          ctx.textBaseline = "top";
-          ctx.lineWidth = 3;
-          ctx.strokeStyle = "#000000";
-          ctx.fillStyle = item.color;
-          ctx.strokeText(item.text, startX + 10, curY + 4);
-          ctx.fillText(item.text, startX + 10, curY + 4);
-
-          // Подстрока с очками
-          ctx.font = "12px 'Baloo Paaji', sans-serif";
-          ctx.fillStyle = "#cbd5e1";
-          ctx.strokeText(item.sub, startX + 10, curY + 23);
-          ctx.fillText(item.sub, startX + 10, curY + 23);
-
-          curY += boxH + 6;
-        }
-        ctx.restore();
-      }
-    }
   class Feature_AutoResurrect extends CheatFeatureBase {
       static id = "autoResurrect";
       static category = Ye;
@@ -17268,8 +16966,10 @@ class Feature_MapMarkers extends CheatFeatureBase {
   static FONT = "'Baloo Paaji', sans-serif";
   static TEAM_HP_OFFSET_X = 0;
   static TEAM_HP_OFFSET_Y = 30;
+  static TEAM_LIMIT_OFFSET_Y = 55; // сдвиг строки Limit ниже HP (ниже heal bar)
+  static TEAM_INV_LIMIT_EXTRA = 25; // доп. сдвиг инвентаря, когда показаны HP и Limit
   static TEAM_INV_OFFSET_X = 0;
-  static TEAM_INV_OFFSET_Y = 50;
+  static TEAM_INV_OFFSET_Y = 80;
 
   constructor(t) {
     super(t);
@@ -17916,6 +17616,7 @@ class Feature_MapMarkers extends CheatFeatureBase {
       x: Math.round(player.x),
       y: Math.round(player.y),
       hp: gauges?.health ?? 100,
+      limit: getMaxEntityId(this.main),
       dead: this._isPlayerDead(),
       inv: this._collectMyInventory(),
       skin: pick("skinChangerActive", "skinChangerSkin", "skin"),
@@ -18689,7 +18390,8 @@ class Feature_MapMarkers extends CheatFeatureBase {
     const showInv = sm?.get("teamInv") ?? true;
     const showHp = sm?.get("teamHp") ?? true;
     const showNick = sm?.get("realNick") ?? true;
-    if (!showInv && !showHp && !showNick) return;
+    const showLimit = sm?.get("teamLimit") ?? true;
+    if (!showInv && !showHp && !showNick && !showLimit) return;
 
     const cam = this.main.user?.cam;
     const me = this.main.get_local_player();
@@ -18730,14 +18432,23 @@ class Feature_MapMarkers extends CheatFeatureBase {
           this._f(22, false), "#54a34e", 5);
       }
 
-      if (showInv && ally.inv) this._drawAllyInventory(ctx, ally.inv, sx, sy);
+      // Limit: под HP, а если HP выключен — на его месте
+      const hasHp = showHp && ally.hp !== undefined;
+      if (showLimit && ally.limit !== undefined) {
+        const ly = sy + Feature_MapMarkers.TEAM_HP_OFFSET_Y + (hasHp ? Feature_MapMarkers.TEAM_LIMIT_OFFSET_Y : 0);
+        this._text(ctx, "L: " + (Number(ally.limit) || 0), sx + Feature_MapMarkers.TEAM_HP_OFFSET_X, ly,
+          this._f(22, false), "#f1c40f", 5);
+      }
+
+      if (showInv && ally.inv) this._drawAllyInventory(ctx, ally.inv, sx, sy,
+        (hasHp && showLimit && ally.limit !== undefined) ? Feature_MapMarkers.TEAM_INV_LIMIT_EXTRA : 0);
     }
 
     ctx.off_xray = false;
     ctx.restore();
   }
 
-  _drawAllyInventory(ctx, rawInv, sx, sy) {
+  _drawAllyInventory(ctx, rawInv, sx, sy, extraY = 0) {
     const items = [];
     const entries = Array.isArray(rawInv) ? rawInv.entries() : Object.entries(rawInv);
     for (const [k, raw] of entries) {
@@ -18752,7 +18463,7 @@ class Feature_MapMarkers extends CheatFeatureBase {
     const slot = 32, gap = 4, padX = 5, padY = 4;
     const barW = items.length * (slot + gap) - gap + padX * 2;
     const barX = sx + Feature_MapMarkers.TEAM_INV_OFFSET_X - barW / 2;
-    const barY = sy + Feature_MapMarkers.TEAM_INV_OFFSET_Y;
+    const barY = sy + Feature_MapMarkers.TEAM_INV_OFFSET_Y + extraY;
 
     ctx.save();
     ctx.fillStyle = "rgba(11,30,34,0.9)";
@@ -21584,7 +21295,7 @@ ctx.drawImage(p.ldb_label, 187 + wuyX, yPos);
 
             const text = t.toFixed(1);
             const sx = cam.x + p.x - 15;
-            const sy = cam.y + p.y + 40;
+            const sy = cam.y + p.y + 60;
 
             ctx.save();
             ctx.textAlign = "left";
@@ -31307,7 +31018,6 @@ class Feature_RenderingList extends CheatFeatureBase {
       Feature_PathFinder: () => Feature_PathFinder,
       Feature_BedInfo: () => Feature_BedInfo,
       Feature_SmartOppositeKeys: () => Feature_SmartOppositeKeys,
-      Feature_KillQuestFeed: () => Feature_KillQuestFeed,
       Feature_AutoResurrect: () => Feature_AutoResurrect,
       Feature_CraftTimer: () => Feature_CraftTimer,
       Feature_ColoredSpikes: () => Feature_ColoredSpikes,
@@ -31922,7 +31632,6 @@ for (const [e, n] of Object.entries(t)) {
   const FEATURES = [
     ["Feature_MarketBinds", () => Feature_MarketBinds],
     ["Feature_ChestInfo", () => Feature_ChestInfo],
-    ["Feature_KillQuestFeed", () => Feature_KillQuestFeed],
     ["Feature_PathFinder", () => Feature_PathFinder],
     ["Feature_Defense", () => Feature_Defense],
     ["Feature_AutoBottle", () => Feature_AutoBottle],
