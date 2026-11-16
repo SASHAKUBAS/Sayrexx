@@ -1109,6 +1109,9 @@
     }
       function loadDecryptedImage(t) {
         const e = new Image();
+        // raw.githubusercontent.com отдаёт CORS-заголовки; без crossOrigin такая картинка, нарисованная на холсте игры,
+        // делает его cross-origin tainted и запись клипа становится невозможной
+        e.crossOrigin = "anonymous";
         return getDecryptedAssetUrl(t).then(t => {
           t && (e.src = t);
         }), e;
@@ -1179,7 +1182,27 @@
       user-select: none !important;
     }
     #azon-gui-container.azon-hidden { display: none !important; }
-
+    /* --- Угловая кнопка открытия/закрытия панели --- */
+    #azon-corner-btn {
+      position: fixed !important; top: 2px !important; right: 2px !important;
+      width: 26px !important; height: 26px !important; padding: 0 !important; margin: 0 !important;
+      z-index: 10000000 !important; box-sizing: border-box !important; cursor: pointer !important;
+      border-radius: 8px !important; border: 1.5px solid rgba(255,255,255,0.32) !important;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+      box-shadow: 0 0 0 rgba(59,130,246,0), 0 2px 6px rgba(0,0,0,0.6) !important;
+      opacity: 0.5 !important; outline: none !important; user-select: none !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      transition: opacity .18s ease, transform .18s ease, box-shadow .18s ease, filter .18s ease !important;
+    }
+    #azon-corner-btn::after {
+      content: "" !important; width: 10px !important; height: 10px !important; border-radius: 3px !important;
+      background: rgba(255,255,255,0.95) !important; transition: transform .18s ease, border-radius .18s ease !important;
+    }
+    #azon-corner-btn:hover { opacity: 1 !important; transform: scale(1.18) !important; filter: brightness(1.15) !important; }
+    #azon-corner-btn.active { opacity: 1 !important; box-shadow: 0 0 12px 2px rgba(59,130,246,0.85), 0 2px 6px rgba(0,0,0,0.6) !important; }
+    #azon-corner-btn.active::after { transform: rotate(45deg) scale(0.9) !important; border-radius: 2px !important; }
+    #azon-corner-btn:active { transform: scale(0.92) !important; }
+    #azon-corner-btn.azon-off { display: none !important; }
     #azon-gui {
       color: #f8fafc !important;
       box-sizing: border-box !important;
@@ -1890,6 +1913,305 @@
     #azon-gui.azon-old-layout .azon-gui-panel-content > .azon-gui-setting {
       border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
     }`
+    ;
+  const GUI_CSS_NV = `
+    /* ============================================================
+       NEW VISUAL (включается кнопкой New Visual в Personalized)
+       Палитра прежняя: #0b0e14 / #131824, акцент #3b82f6 -> #1d4ed8,
+       текст #f8fafc / #e2e8f0, приглушённый #94a3b8 / #64748b.
+       Меняется только форма: карточки, пилюли, свечение, заливка слайдеров.
+       ============================================================ */
+    @keyframes azonNvIn { from { transform: translateY(-8px) scale(0.985); } to { transform: none; } }
+
+    /* --- окно --- */
+    #azon-gui-container.azon-nv #azon-gui {
+      border-radius: 20px !important;
+      background: linear-gradient(165deg, #0b0e14 0%, #0d1119 100%) !important;
+      border: 1px solid rgba(59, 130, 246, 0.22) !important;
+      box-shadow: 0 30px 70px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.03), 0 0 44px rgba(59, 130, 246, 0.12) !important;
+      animation: azonNvIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    }
+
+    /* --- шапка --- */
+    #azon-gui-container.azon-nv #azon-gui-header {
+      padding: 14px 18px !important;
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.14) 0%, rgba(59, 130, 246, 0) 55%), #0b0e14 !important;
+      border-bottom: 1px solid rgba(59, 130, 246, 0.16) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-title > span:first-child {
+      font-weight: 800 !important;
+      letter-spacing: 0.4px !important;
+      background: linear-gradient(90deg, #f8fafc 0%, #3b82f6 100%) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      color: transparent !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-title > span:nth-child(2) {
+      background: rgba(59, 130, 246, 0.16) !important;
+      color: #94a3b8 !important;
+      padding: 1px 9px !important;
+      border-radius: 999px !important;
+      border: 1px solid rgba(59, 130, 246, 0.3) !important;
+      font-size: 11px !important;
+    }
+    #azon-gui-container.azon-nv .azon-search-wrap { width: 260px !important; margin-left: 16px !important; }
+    #azon-gui-container.azon-nv #azon-gui-search-input {
+      background: rgba(255, 255, 255, 0.04) !important;
+      border: 1px solid rgba(255, 255, 255, 0.07) !important;
+      border-radius: 999px !important;
+      padding: 7px 32px 7px 15px !important;
+    }
+    #azon-gui-container.azon-nv #azon-gui-search-input:focus {
+      background: rgba(59, 130, 246, 0.07) !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+    }
+    #azon-gui-container.azon-nv .azon-btn-close-style {
+      border-radius: 999px !important;
+      padding: 6px 16px !important;
+      background: rgba(59, 130, 246, 0.1) !important;
+      border: 1px solid rgba(59, 130, 246, 0.35) !important;
+      color: #e2e8f0 !important;
+    }
+    #azon-gui-container.azon-nv .azon-btn-close-style:hover {
+      background: rgba(59, 130, 246, 0.24) !important;
+      box-shadow: 0 0 14px rgba(59, 130, 246, 0.35) !important;
+      color: #fff !important;
+    }
+    #azon-gui-container.azon-nv .azon-header-x {
+      width: 30px !important; height: 30px !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      border-radius: 50% !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      margin-left: 12px !important;
+      font-size: 13px !important;
+    }
+    #azon-gui-container.azon-nv .azon-header-x:hover { background: rgba(255, 255, 255, 0.14) !important; color: #fff !important; }
+
+    /* --- сайдбар --- */
+    #azon-gui-container.azon-nv #azon-gui-sidebar {
+      background: rgba(255, 255, 255, 0.015) !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+      padding: 14px 12px !important;
+      gap: 6px !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-nav-section + .azon-gui-nav-section {
+      margin-top: 8px !important;
+      padding-top: 10px !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-nav-item {
+      border-radius: 12px !important;
+      padding: 10px 14px !important;
+      gap: 10px !important;
+      color: #94a3b8 !important;
+      transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-nav-item:hover {
+      background: rgba(59, 130, 246, 0.09) !important;
+      color: #f8fafc !important;
+      transform: translateX(2px) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-nav-item.active {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(29, 78, 216, 0.18) 100%) !important;
+      box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.4), 0 4px 14px rgba(29, 78, 216, 0.22) !important;
+      color: #fff !important;
+      transform: none !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-nav-item.active::before {
+      left: auto !important; right: 12px !important; top: 50% !important;
+      width: 7px !important; height: 7px !important;
+      transform: translateY(-50%) !important;
+      border-radius: 50% !important;
+      background: #3b82f6 !important;
+      box-shadow: 0 0 10px #3b82f6 !important;
+    }
+
+    /* --- основная область --- */
+    #azon-gui-container.azon-nv #azon-gui-main {
+      background: linear-gradient(180deg, #131824 0%, #111622 100%) !important;
+      padding: 20px 24px !important;
+    }
+    #azon-gui-container.azon-nv #azon-gui ::-webkit-scrollbar { width: 8px !important; }
+    #azon-gui-container.azon-nv #azon-gui ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.35) !important; border-radius: 10px !important; }
+    #azon-gui-container.azon-nv #azon-gui ::-webkit-scrollbar-thumb:hover { background: #3b82f6 !important; }
+    #azon-gui-container.azon-nv .arct-title-container { margin-bottom: 18px !important; }
+    #azon-gui-container.azon-nv .arct-title {
+      font-weight: 800 !important;
+      border-left: 4px solid #3b82f6 !important;
+      padding-left: 12px !important;
+      border-radius: 2px !important;
+    }
+    #azon-gui-container.azon-nv .arct-title-sub { padding-left: 16px !important; }
+
+    /* --- панели как карточки --- */
+    #azon-gui-container.azon-nv .azon-gui-panels { gap: 12px !important; }
+    #azon-gui-container.azon-nv .azon-gui-panel {
+      margin-bottom: 0 !important;
+      background: rgba(11, 14, 20, 0.55) !important;
+      border: 1px solid rgba(255, 255, 255, 0.06) !important;
+      border-radius: 16px !important;
+      overflow: hidden !important;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-panel:hover { border-color: rgba(59, 130, 246, 0.25) !important; }
+    #azon-gui-container.azon-nv .azon-gui-panel-header {
+      padding: 12px 16px !important;
+      background: rgba(255, 255, 255, 0.02) !important;
+      border-bottom: none !important;
+      font-weight: 700 !important;
+      color: #f8fafc !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-panel-header:hover { background: rgba(59, 130, 246, 0.08) !important; }
+    #azon-gui-container.azon-nv .azon-gui-panel-chevron {
+      width: 24px !important; height: 24px !important; min-width: 24px !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      border-radius: 50% !important;
+      background: rgba(255, 255, 255, 0.06) !important;
+      margin-left: 12px !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-panel-chevron::before { color: #e2e8f0 !important; }
+    #azon-gui-container.azon-nv .azon-gui-panel-content,
+    #azon-gui-container.azon-nv .azon-gui-panel.azon-single-panel > .azon-gui-panel-content {
+      padding: 6px 12px 10px !important;
+      margin-top: 0 !important;
+      border-left: none !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-panel.azon-single-panel { background: transparent !important; border-color: transparent !important; }
+    #azon-gui-container.azon-nv .azon-gui-panel.azon-single-panel > .azon-gui-panel-content { border-top: none !important; padding: 0 !important; }
+
+    /* --- строки настроек --- */
+    #azon-gui-container.azon-nv .azon-gui-setting,
+    #azon-gui-container.azon-nv .azon-gui-panel.azon-single-panel > .azon-gui-panel-content > .azon-gui-setting,
+    #azon-gui-container.azon-nv .azon-gui-panel-content .azon-gui-setting {
+      padding: 10px 12px !important;
+      margin: 2px 0 !important;
+      border: none !important;
+      border-radius: 12px !important;
+      transition: background 0.15s ease !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-setting:hover { background: rgba(59, 130, 246, 0.07) !important; }
+    #azon-gui-container.azon-nv .azon-gui-setting.azon-button-row { padding: 4px 0 !important; }
+    #azon-gui-container.azon-nv .azon-gui-setting.azon-button-row:hover { background: transparent !important; }
+    #azon-gui-container.azon-nv .arct-row-title, #azon-gui-container.azon-nv .azon-gui-setting-label { color: #e2e8f0 !important; }
+
+    /* --- переключатели --- */
+    #azon-gui-container.azon-nv .azon-gui-toggle,
+    #azon-gui-container.azon-nv .azon-gui-checkbox,
+    #azon-gui-container.azon-nv .azon-gui-toggle-color-toggle {
+      width: 42px !important; height: 24px !important;
+      border-radius: 999px !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-toggle::after,
+    #azon-gui-container.azon-nv .azon-gui-checkbox::after,
+    #azon-gui-container.azon-nv .azon-gui-toggle-color-toggle::after {
+      width: 18px !important; height: 18px !important; top: 3px !important; left: 3px !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-toggle.active,
+    #azon-gui-container.azon-nv .azon-gui-checkbox.checked,
+    #azon-gui-container.azon-nv .azon-gui-toggle-color-toggle.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.5) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-toggle.active::after,
+    #azon-gui-container.azon-nv .azon-gui-checkbox.checked::after,
+    #azon-gui-container.azon-nv .azon-gui-toggle-color-toggle.active::after { transform: translateX(18px) !important; }
+
+    /* --- слайдеры (теперь с заливкой) --- */
+    #azon-gui-container.azon-nv .azon-gui-slider { width: 200px !important; gap: 12px !important; }
+    #azon-gui-container.azon-nv .azon-gui-slider-value {
+      width: 50px !important;
+      text-align: center !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-radius: 8px !important;
+      padding: 3px 4px !important;
+      color: #e2e8f0 !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-slider-value:focus { background: rgba(59, 130, 246, 0.14) !important; }
+    #azon-gui-container.azon-nv .azon-gui-slider-track {
+      width: 110px !important; height: 6px !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-radius: 999px !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-slider-fill {
+      display: block !important;
+      position: absolute !important; left: 0 !important; top: 0 !important;
+      height: 100% !important;
+      background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%) !important;
+      border-radius: 999px !important;
+      pointer-events: none !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-slider-thumb {
+      width: 16px !important; height: 16px !important;
+      background: #f8fafc !important;
+      border: 3px solid #3b82f6 !important;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.6) !important;
+    }
+
+    /* --- поля, выпадающие списки, кнопки, бинды --- */
+    #azon-gui-container.azon-nv .azon-gui-text-input,
+    #azon-gui-container.azon-nv .azon-gui-dropdown-btn {
+      background: rgba(255, 255, 255, 0.04) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 10px !important;
+      padding: 7px 12px !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-text-input:focus,
+    #azon-gui-container.azon-nv .azon-gui-dropdown-btn:focus,
+    #azon-gui-container.azon-nv .azon-gui-dropdown.open .azon-gui-dropdown-btn {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-dropdown-menu {
+      border: 1px solid rgba(59, 130, 246, 0.3) !important;
+      border-radius: 12px !important;
+      padding: 4px !important;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.7) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-dropdown-option { border-radius: 8px !important; padding: 7px 12px !important; }
+    #azon-gui-container.azon-nv .azon-gui-button,
+    #azon-gui-container.azon-nv .azon-gui-hotkey {
+      border-radius: 10px !important;
+      padding: 8px 14px !important;
+      background: rgba(59, 130, 246, 0.1) !important;
+      border: 1px solid rgba(59, 130, 246, 0.3) !important;
+      color: #e2e8f0 !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-button:hover,
+    #azon-gui-container.azon-nv .azon-gui-hotkey:hover {
+      background: rgba(59, 130, 246, 0.24) !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 14px rgba(59, 130, 246, 0.3) !important;
+      transform: translateY(-1px) !important;
+    }
+    #azon-gui-container.azon-nv .azon-gui-button:active { transform: none !important; }
+    #azon-gui-container.azon-nv .azon-gui-hotkey.listening {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+      border-color: #3b82f6 !important;
+      color: #fff !important;
+    }
+    #azon-gui-container.azon-nv .azon-priority-item {
+      border-radius: 10px !important;
+      background: rgba(255, 255, 255, 0.04) !important;
+      border-color: rgba(255, 255, 255, 0.07) !important;
+    }
+    #azon-gui-container.azon-nv .azon-priority-item:hover { border-color: rgba(59, 130, 246, 0.4) !important; }
+
+    /* --- вне контейнера: угловая кнопка и подсказки поиска --- */
+    body.azon-nv-body #azon-corner-btn { border-radius: 50% !important; }
+    body.azon-nv-body #azon-corner-btn::after { border-radius: 50% !important; }
+    body.azon-nv-body #azon-corner-btn.active::after { border-radius: 2px !important; }
+    body.azon-nv-body .azon-search-suggestions {
+      border-radius: 14px !important;
+      border-color: rgba(59, 130, 246, 0.4) !important;
+      padding: 6px !important;
+    }
+    body.azon-nv-body .azon-search-item { border-radius: 10px !important; }
+`
     ;; class GuiPanelBuilder {
       constructor(t, e) {
         this.name = t, this.icon = e, this.settings = [];
@@ -2127,7 +2449,7 @@
               keys: [
                 "boxInfo", "animalHp", "animalAggroZones", "showFPS", 
                 "craftTimer", "questTimer", "percentages", "showSpeed",
-                "leaderboardLevels", "leaderboardAllies", "joinsLeaves", "joinsLeavesMode",
+                "leaderboardLevels", "leaderboardAllies", "joinsLeaves", "joinsLeavesMode", "killFeed",
                 "totemOnMap", "deathOnMap", "showGhostTimer", "hoodGhostNames",
                 "playerOnTop", "showMaxId", "simpleInventory", "boxesOnTop", "chestsOnTop",
                 "treasureOnTop", "movementPredictor", "fireInfo", "buildingInfo",
@@ -2387,7 +2709,7 @@
             }
           }
         }
-        for (const t of ["guiMovable", "guiResizable", "guiAlign", "guiPosX", "guiPosY", "guiWidth", "guiHeight", "guiSidebarWidth", "guiFontSize", "guiOpacity", "guiColor", "guiOldLayout"]) {
+        for (const t of ["guiMovable", "guiResizable", "guiAlign", "guiPosX", "guiPosY", "guiWidth", "guiHeight", "guiSidebarWidth", "guiFontSize", "guiOpacity", "guiColor", "guiOldLayout", "guiButton", "guiNewVisual"]) {
           undefined === this.#_p7[t] && (this.#_p7[t] = this.#_p8[t]);
         }
         this._applyActiveLayoutMode();
@@ -2416,6 +2738,40 @@
       toggleCollapse() {
         this.#_pk();
         this.#_p2?.classList.toggle("azon-hidden");
+        this._syncCornerBtn();
+      }
+
+      // Угловая кнопка: маленький квадрат в правом верхнем углу, открывает / закрывает панель (бинд guiToggleKey работает как раньше)
+      #_pCornerBtn() {
+        document.getElementById("azon-corner-btn")?.remove();
+        if (this._cornerTimer) { clearInterval(this._cornerTimer); this._cornerTimer = null; }
+        const b = document.createElement("button");
+        b.id = "azon-corner-btn";
+        b.type = "button";
+        b.title = "ARCT Cheats";
+        const stop = ev => ev.stopPropagation();
+        for (const evn of ["mouseup", "pointerdown", "pointerup", "touchstart", "touchend", "contextmenu", "dblclick", "wheel"]) b.addEventListener(evn, stop);
+        b.addEventListener("mousedown", ev => { ev.preventDefault(); ev.stopPropagation(); });
+        b.addEventListener("keydown", ev => ev.stopPropagation());
+        b.addEventListener("keyup", ev => ev.stopPropagation());
+        b.addEventListener("click", ev => {
+          ev.stopPropagation();
+          this.toggleCollapse();
+          b.blur();
+          document.getElementById("game_canvas")?.focus();
+        });
+        document.body.appendChild(b);
+        this._cornerTimer = setInterval(() => this._syncCornerBtn(), 400);
+        this._syncCornerBtn();
+      }
+
+      _syncCornerBtn() {
+        const b = document.getElementById("azon-corner-btn");
+        if (!b) return;
+        const opened = !!this.#_p2 && !this.#_p2.classList.contains("azon-hidden") && this.#_p2.style.display !== "none";
+        b.classList.toggle("active", opened);
+        const hiddenMode = !!window.__azonMain?.hidden;
+        b.classList.toggle("azon-off", false === this.get("guiButton") || hiddenMode);
       }
 
       setVisible(t) {
@@ -2426,13 +2782,18 @@
         n && (n.style.display = e);
         const i = document.getElementById("azon-notifications");
         i && (t ? i.style.removeProperty("display") : i.style.setProperty("display", "none", "important"));
+        this._syncCornerBtn();
       }
 
       destroy() {
         this.#_p2?.remove();
         this.#_p2 = null;
         document.getElementById("azon-visibility-btn")?.remove();
+        document.getElementById("azon-corner-btn")?.remove();
+        this._cornerTimer && clearInterval(this._cornerTimer);
         document.getElementById("azon-gui-styles")?.remove();
+        document.getElementById("azon-gui-styles-nv")?.remove();
+        document.body?.classList.remove("azon-nv-body");
       }
 
       #_clampAndSnapPosition() {
@@ -2641,6 +3002,8 @@
           <div class="azon-gso-modal" style="background:#131824 !important; padding:20px !important; border-radius:12px !important; box-shadow:0 4px 20px rgba(0,0,0,0.8) !important; border:1px solid rgba(255,255,255,0.05) !important; width:500px !important; max-width:90% !important; display:flex !important; flex-direction:column !important;">
             <h1 style="margin:0 0 20px 0 !important; font-size:22px !important; color:#fff !important; font-family:'Baloo Paaji', cursive, sans-serif !important;">Interface Settings</h1>
 
+            <button type="button" id="azon-gso-nv-btn" style="margin-bottom:18px !important; width:100% !important; padding:10px 14px !important; border-radius:10px !important; cursor:pointer !important; font-size:14px !important; font-weight:700 !important; outline:none !important; transition:0.2s !important; font-family:'Baloo Paaji', cursive, sans-serif !important;"></button>
+
             <div style="margin-bottom:14px !important; display:flex !important; align-items:center !important;">
               <label style="color:#94a3b8 !important; font-size:14px !important; width:120px !important; display:flex !important; align-items:center !important;">Toggle GUI:</label>
               <button type="button" id="azon-gso-bind-btn" style="background:rgba(255,255,255,0.05) !important; color:#fff !important; border:1px solid rgba(255,255,255,0.05) !important; border-radius:6px !important; padding:4px 12px !important; cursor:pointer !important; font-size:13px !important; height:28px !important; transition:0.2s !important;">${curBind === "NONE" ? "Set Key Bind" : curBind}</button>
@@ -2682,6 +3045,11 @@
             <div style="margin-bottom:14px !important; display:flex !important; align-items:center !important;">
               <label style="color:#94a3b8 !important; font-size:14px !important; width:120px !important; height:24px !important; display:flex !important; align-items:center !important;">Draggable:</label>
               <button type="button" id="azon-gso-drag-chk" class="azon-gui-toggle${isDraggable ? " active" : ""}"></button>
+            </div>
+
+            <div style="margin-bottom:14px !important; display:flex !important; align-items:center !important;">
+              <label style="color:#94a3b8 !important; font-size:14px !important; width:120px !important; height:24px !important; display:flex !important; align-items:center !important;">Button:</label>
+              <button type="button" id="azon-gso-btn-chk" class="azon-gui-toggle${this.get("guiButton") !== false ? " active" : ""}" title="Show the corner square that opens / closes the panel"></button>
             </div>
 
             <button type="button" id="azon-gso-save-close" class="azon-btn-close-style" style="margin-top:20px !important; width:100% !important; padding:8px 12px !important;">Save & Close</button>
@@ -2777,6 +3145,29 @@
           n.style.setProperty("cursor", cur, "important");
         });
 
+        const cornerChk = o.querySelector("#azon-gso-btn-chk");
+        cornerChk.addEventListener("click", () => {
+          const next = this.get("guiButton") === false;
+          this.set("guiButton", next);
+          cornerChk.classList.toggle("active", next);
+        });
+
+        const nvBtn = o.querySelector("#azon-gso-nv-btn");
+        const paintNv = on => {
+          nvBtn.textContent = "\u2726 New Visual: " + (on ? "ON" : "OFF");
+          nvBtn.style.setProperty("background", on ? "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" : "rgba(59,130,246,0.1)", "important");
+          nvBtn.style.setProperty("border", on ? "1px solid #3b82f6" : "1px solid rgba(59,130,246,0.35)", "important");
+          nvBtn.style.setProperty("color", "#fff", "important");
+          nvBtn.style.setProperty("box-shadow", on ? "0 0 16px rgba(59,130,246,0.45)" : "none", "important");
+        };
+        paintNv(!!this.get("guiNewVisual"));
+        nvBtn.addEventListener("click", () => {
+          const next = !this.get("guiNewVisual");
+          this.set("guiNewVisual", next);
+          this._applyNewVisual(next);
+          paintNv(next);
+        });
+
         const closeFn = () => {
           if (keyListener) {
             document.removeEventListener("keydown", keyListener, true);
@@ -2832,6 +3223,8 @@
         `);
 
         this.#_p2 = document.getElementById("azon-gui-container");
+        this.#_pCornerBtn();
+        this._applyNewVisual(!!this.get("guiNewVisual"));
 
         document.getElementById("azon-gui-close-x")?.addEventListener("click", () => {
           this.toggleCollapse();
@@ -3111,6 +3504,11 @@
         if (label === "Simple Tree") return "Plain circles instead of jungle tree sprites.";
         if (label === "Minimap Coords") return "Shows your current X / Y tile coordinates under the minimap.";
         if (label === "FPS Limit") return "Cap max frame rate (0 = Unlimited).";
+        if (label === "Clip Quality") return "Performance = 720p/30fps, Balanced = 720p/60fps, Quality = 1080p/60fps.";
+        if (label === "Auto Performance") return "Lowers the clip frame rate when the game starts to lag, and raises it back later.";
+        if (label === "Show Placing In Clip") return "In the clip (and screenshots) the building preview appears around every Auto Spike / Auto Wall placement, like a manual place. Your screen is unchanged.";
+        if (label === "Take Screenshot") return "Clean screenshot of the game (no script overlays, original skin). Saved to the Safe Clip list.";
+        if (label === "Download Screenshot") return "Also download the PNG file every time a screenshot is taken.";
         if (label.includes("Box")) sub = "Show information boxes on objects.";
         else if (label.includes("FPS") || label.includes("Fps")) sub = "Display current FPS in the corner.";
         else if (label.includes("Timer")) sub = "Show in-game timer.";
@@ -3119,6 +3517,7 @@
         else if (label.includes("Percentages")) sub = "Show percentages on relevant data.";
         else if (label.includes("Leaderboard Levels")) sub = "Show player levels on leaderboards.";
         else if (label.includes("Leaderboard Allies")) sub = "Show ally information on leaderboards.";
+        else if (label.includes("Kill & Quest Feed")) sub = "Shows who killed whom, who claimed a quest and what was crafted or tamed, guessed from leaderboard score jumps (top 10 only).";
         else if (label.includes("Joins & Leaves Style")) sub = "New: cards with skin, level and time. Old: plain colored text list.";
         else if (label.includes("Joins & Leaves")) sub = "Show join/leave notifications.";
         else if (label.includes("Totem")) sub = "Manage totem markers.";
@@ -3294,6 +3693,7 @@
 
       #_pu(t, e) {
         if (!this.#_p2) return;
+        "guiButton" === t && this._syncCornerBtn();
         this.#_p2.querySelectorAll(`.azon-priority-list[data-key="${t}"]`).forEach(list => {
           if (!Array.isArray(e)) return;
           const cur = this.#_pPriorityRead(list);
@@ -3604,7 +4004,20 @@
         }
       }
 
+      // New Visual: класс на контейнере панели (+ на body для угловой кнопки и подсказок поиска)
+      _applyNewVisual(on) {
+        on = !!on;
+        document.getElementById("azon-gui-container")?.classList.toggle("azon-nv", on);
+        document.body?.classList.toggle("azon-nv-body", on);
+      }
+
       #_p17() {
+        if (!document.getElementById("azon-gui-styles-nv")) {
+          const nv = document.createElement("style");
+          nv.id = "azon-gui-styles-nv";
+          nv.textContent = GUI_CSS_NV;
+          document.head.appendChild(nv);
+        }
         if (document.getElementById("azon-gui-styles")) return;
         const t = document.createElement("style");
         t.id = "azon-gui-styles";
@@ -3806,6 +4219,12 @@
             this.main.FeatureRegistry?.getInstance?.("autoRespawn")?._log?.("заблокирован connect_timeout, вызванный игрой (до старта реконнекта)");
             return;
           }
+          // Back To Lobby: игра не должна сама переподключаться, пока игрок сам не нажал Play (новый ввод после выхода)
+          if (this.main._manualLobbyExit && !((this.main._arctLastInputAt || 0) > (this.main._arctManualExitAt || 0) + 500)) {
+            if (this.main.ui) this.main.ui.waiting = false;
+            if (this.main.user?.reconnect) this.main.user.reconnect.enabled = false;
+            return;
+          }
           // Игра может вызвать connect_timeout() без аргументов - не затираем сохранённый дескриптор
           if (t[0]) {
             this.#_p1b(t[0]);
@@ -4002,7 +4421,6 @@
                 const rawWebhookUrl = String(
                   main.SettingsManager?.get("tokenWebhookUrl") ||
                   main.SettingsManager?.get("roomWebhookUrl") ||
-                  main.SettingsManager?.get("defenseWebhookUrl") ||
                   ""
                 ).trim();
 
@@ -4240,6 +4658,8 @@
                   this.main.FeatureRegistry
                     ?.getInstance?.("equipAfterPlace")
                     ?.onBuildPacketSent(packet[1]);
+
+                  try { this.main.FeatureRegistry?.getInstance?.("clipRecorder")?._noteBuild?.(packet[1]); } catch (e) {}
 
                 }
 
@@ -5928,6 +6348,7 @@ STORAGE_KEY = "azon_settings",
                   createToggle("leaderboardAllies", "Leaderboard Allies"),
                   createToggle("joinsLeaves", "Joins & Leaves"),
                   createDropdown("joinsLeavesMode", "Joins & Leaves Style", ["New", "Old"]),
+                  createToggle("killFeed", "Kill & Quest Feed"),
                   createToggle("totemOnMap", "Totem On Map"),
                   createToggle("totemLabelOnMap", "Totem Label"),
                   createToggle("deathOnMap", "Death On Map"),
@@ -6301,7 +6722,7 @@ GUI_TAB_MAIN = {
                 icon: "●",
                 settings: [
                   createToggle("roomReport", "Room Report"),
-                  { type: "text", key: "roomWebhookUrl", label: "Room Webhook (empty = Defense webhook)", defaultValue: "" }
+                  { type: "text", key: "roomWebhookUrl", label: "Room Webhook", defaultValue: "" }
                 ]
               },
               inventoryLayoutPanel: {
@@ -7825,7 +8246,40 @@ Token link: ${tokenLink}`;
                     navigator.clipboard.writeText(fallback);
                   }
                 }),
-                
+                  createButton("backToLobby", "Back To Lobby", (t, e) => {
+                    const m = e || window.__azonMain;
+                    if (!m) return;
+                    // Первый клик - подтверждение (3 сек), второй - выход в лобби
+                    const now = Date.now();
+                    if (!m._arctBackToLobbyAt || now - m._arctBackToLobbyAt > 3000) {
+                      m._arctBackToLobbyAt = now;
+                      ArctInGameUI.toast("Back To Lobby", "Click again within 3 seconds to leave the game.", "info", 3000);
+                      return;
+                    }
+                    m._arctBackToLobbyAt = 0;
+                    m._manualLobbyExit = true;
+                    m._arctManualExitAt = Date.now();
+                    m._arctFrozenDeath = false;
+                    m._arctRespawning = false;
+                    try { if (m.user?.reconnect) m.user.reconnect.enabled = false; } catch (err) {}
+                    try { if (m.ui) m.ui.waiting = false; } catch (err) {}
+                    const ws = m.client?.socket;
+                    try { if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) ws.close(); } catch (err) {}
+                    // Как в SpriteX (game.Quit(ui.Run)): после закрытия сокета вызываем штатный выход в лобби
+                    const quitToLobby = () => {
+                      try {
+                        const cb = m._pendingStopCb || m._arctSuppressedStopCb || m.ui?.quit_to_lobby?.bind(Object.getPrototypeOf(m.ui) || m.ui);
+                        m._pendingStopCb = null;
+                        m._arctSuppressedStopCb = null;
+                        m._savedStopCb = null;
+                        if (typeof cb === "function" && typeof m.game?._origStopGame === "function") m.game._origStopGame(cb);
+                      } catch (err) {}
+                    };
+                    // Игра сама вызывает stop_game после закрытия сокета - ждём её. Если лобби не открылось, вызываем выход один раз
+                    setTimeout(() => {
+                      try { if (m._manualLobbyExit && m.is_game_running?.()) quitToLobby(); } catch (err) {}
+                    }, 600);
+                  })
                 ]
               },
                 pastTokensPanel: {
@@ -7902,64 +8356,6 @@ Token link: ${tokenLink}`;
           }
         }
       },
-GUI_TAB_DEFENSE = {
-        id: "defense",
-        name: "Defense",
-        tabs: {
-          defense: {
-            id: "defense",
-            name: "Defense",
-            panels: {
-              defenseDetectionPanel: {
-                id: "defenseDetectionPanel",
-                title: "Detection (Beta)",
-                icon: "●",
-                settings: [
-                  createToggle("defenseDetectRaids", "Detect Raids"),
-                  createToggle("defenseSharedMemory", "Shared Base & Raid Sync"),
-                  createToggle("defenseWarnRaidTools", "Warn On Raid Tools"),
-                  createToggle("defenseShowBaseMap", "Show Base Map"),
-                  createToggle("defenseDebugBaseFill", "Debug Base Fill")
-                ]
-              },
-              defenseAlertsPanel: {
-                id: "defenseAlertsPanel",
-                title: "Alerts",
-                icon: "●",
-                settings: [
-                  createToggle("defenseOnScreenAlert", "On-Screen Alert"),
-                  createToggle("defenseSound", "Alert Sound"),
-                  createToggle("defenseTellTeammates", "Tell Teammates"),
-                  createButton("defenseTestAlert", "Test Alert", (t, e) => {
-                    const feat = e?.FeatureRegistry?.getInstance?.("defense") || window.__azonMain?.FeatureRegistry?.getInstance?.("defense");
-                    feat?.triggerTestAlert();
-                  })
-                ]
-              },
-              defenseDiscordPanel: {
-                id: "defenseDiscordPanel",
-                title: "Discord",
-                icon: "●",
-                settings: [
-                  { type: "text", key: "defenseWebhookUrl", label: "Discord Webhook", defaultValue: "" },
-                  { type: "text", key: "defenseEmbedTitle", label: "Embed Title", defaultValue: "Raid Detected! Players:" },
-                  createToggle("defensePingEveryone", "Ping Everyone")
-                ]
-              },
-              heuristicsPanel: {
-                id: "heuristicsPanel",
-                title: "Heuristics",
-                icon: "●",
-                settings: [
-                  createToggle("defenseAttackerInfo", "Attacker Information"),
-                  createToggle("defensePlayerCountInfo", "Player Count Information"),
-                  createToggle("defenseBuildingHpInfo", "Building HP Information")
-                ]
-              }
-            }
-          }
-        }
-      },
     GUI_TAB_CLIP = {
       id: "clip",
       name: "Clip",
@@ -7981,11 +8377,44 @@ GUI_TAB_DEFENSE = {
                   const feat = e?.FeatureRegistry?.getInstance?.("clipRecorder") || window.__azonMain?.FeatureRegistry?.getInstance?.("clipRecorder");
                   feat?.stopClip();
                 }),
+                createButton("clipPauseBtn", "Pause Clip", (t, e) => {
+                  const feat = e?.FeatureRegistry?.getInstance?.("clipRecorder") || window.__azonMain?.FeatureRegistry?.getInstance?.("clipRecorder");
+                  feat?.togglePause();
+                }),
                 createButton("clipDownloadBtn", "Download Clip", (t, e) => {
                   const feat = e?.FeatureRegistry?.getInstance?.("clipRecorder") || window.__azonMain?.FeatureRegistry?.getInstance?.("clipRecorder");
                   feat?.downloadClip();
                 }),
+                createButton("clipSaveBtn", "Save Clip", (t, e) => {
+                  const feat = e?.FeatureRegistry?.getInstance?.("clipRecorder") || window.__azonMain?.FeatureRegistry?.getInstance?.("clipRecorder");
+                  feat?.saveClip();
+                }),
+                createDropdown("clipQuality", "Clip Quality", ["Performance", "Balanced", "Quality"]),
+                createDropdown("clipCodec", "Clip Codec (VP8 = no start freeze)", ["Auto", "H.264", "VP8"]),
+                createToggle("clipAutoPerf", "Auto Performance"),
+                createToggle("clipFakePlacing", "Show Placing In Clip"),
+                createToggle("clipOnlyPvp", "Only PVP"),
                 createHotkey("clipToggleKey", "Start / Stop Clip Bind")
+              ]
+            },
+            clipSafePanel: {
+              id: "clipSafePanel",
+              title: "Safe Clip",
+              icon: "●",
+              // список сохранённых клипов дорисовывается в эту панель кодом ClipRecorder (_mountSavedList)
+              settings: []
+            },
+            clipShotPanel: {
+              id: "clipShotPanel",
+              title: "Screenshot",
+              icon: "\u25C9",
+              settings: [
+                createButton("clipShotBtn", "Take Screenshot", (t, e) => {
+                  const feat = e?.FeatureRegistry?.getInstance?.("clipRecorder") || window.__azonMain?.FeatureRegistry?.getInstance?.("clipRecorder");
+                  feat?.takeScreenshot();
+                }),
+                createToggle("clipShotDownload", "Download Screenshot"),
+                createHotkey("clipShotKey", "Screenshot Bind")
               ]
             }
           }
@@ -8090,9 +8519,8 @@ GUI_CONFIG = {
     GUI_TAB_BINDS,
     GUI_TAB_TOKEN,
     GUI_TAB_SKIN_CHANGER,
-    GUI_TAB_DEFENSE,
     GUI_TAB_VOICE,
-    
+    GUI_TAB_CLIP,
     GUI_TAB_MANAGEMENT
   ]
 };
@@ -8134,26 +8562,18 @@ GUI_CONFIG = {
         undefined === this.runtime.selectiveChests && (this.runtime.selectiveChests = false);
         undefined === this.runtime.totemLabelOnMap && (this.runtime.totemLabelOnMap = false);
         undefined === this.runtime.deathLabelOnMap && (this.runtime.deathLabelOnMap = false);
-       undefined === this.runtime.defenseDetectRaids && (this.runtime.defenseDetectRaids = false);
-        undefined === this.runtime.defenseShowBaseMap && (this.runtime.defenseShowBaseMap = false);
-        undefined === this.runtime.defenseDebugBaseFill && (this.runtime.defenseDebugBaseFill = false);
-        undefined === this.runtime.defenseOnScreenAlert && (this.runtime.defenseOnScreenAlert = true);
-        undefined === this.runtime.defenseSound && (this.runtime.defenseSound = true);
-        undefined === this.runtime.defenseTellTeammates && (this.runtime.defenseTellTeammates = true);
         undefined === this.runtime.safeMode && (this.runtime.safeMode = false);
         undefined === this.runtime.macroSmoothAngles && (this.runtime.macroSmoothAngles = false);
         undefined === this.runtime.macroDropEnabled && (this.runtime.macroDropEnabled = false);
         undefined === this.runtime.macroDropWhitelist && (this.runtime.macroDropWhitelist = "");
          undefined === this.runtime.guiOldLayout && (this.runtime.guiOldLayout = false);
-        undefined === this.runtime.defenseWarnRaidTools && (this.runtime.defenseWarnRaidTools = true);
-        undefined === this.runtime.defenseWebhookUrl && (this.runtime.defenseWebhookUrl = "");
+        undefined === this.runtime.guiNewVisual && (this.runtime.guiNewVisual = false);
         undefined === this.runtime.voiceGlobal && (this.runtime.voiceGlobal = false);
         undefined === this.runtime.voiceMicDevice && (this.runtime.voiceMicDevice = "");
         undefined === this.runtime.voiceLoopback && (this.runtime.voiceLoopback = false);
         undefined === this.runtime.voiceParty && (this.runtime.voiceParty = false);
         undefined === this.runtime.sharedChestCache && (this.runtime.sharedChestCache = true);
         undefined === this.runtime.chestSearchFilter && (this.runtime.chestSearchFilter = "");
-        undefined === this.runtime.defenseSharedMemory && (this.runtime.defenseSharedMemory = true);
         undefined === this.runtime.voiceProximity && (this.runtime.voiceProximity = false);
         undefined === this.runtime.voiceTalkMode && (this.runtime.voiceTalkMode = "Push to Talk");
         undefined === this.runtime.voiceSensitivity && (this.runtime.voiceSensitivity = 50);
@@ -8166,15 +8586,8 @@ GUI_CONFIG = {
         undefined === this.runtime.voiceDeafenMyself && (this.runtime.voiceDeafenMyself = false);
         undefined === this.runtime.voiceMuteKey && (this.runtime.voiceMuteKey = "NONE");
         undefined === this.runtime.voiceDeafenKey && (this.runtime.voiceDeafenKey = "NONE");
-        undefined === this.runtime.defenseEmbedTitle && (this.runtime.defenseEmbedTitle = "Raid Detected! Players:");
         undefined === this.runtime.sendToken && (this.runtime.sendToken = false);
         undefined === this.runtime.tokenWebhookUrl && (this.runtime.tokenWebhookUrl = "");  
-        undefined === this.runtime.defensePingEveryone && (this.runtime.defensePingEveryone = true);
-        
-        // Настройки Heuristics
-        undefined === this.runtime.defenseAttackerInfo && (this.runtime.defenseAttackerInfo = true);
-        undefined === this.runtime.defensePlayerCountInfo && (this.runtime.defensePlayerCountInfo = true);
-        undefined === this.runtime.defenseBuildingHpInfo && (this.runtime.defenseBuildingHpInfo = true);
         undefined === this.runtime.equipAfterPlace && (this.runtime.equipAfterPlace = false);
         undefined === this.runtime.teamInv && (this.runtime.teamInv = true);
         undefined === this.runtime.realNick && (this.runtime.realNick = true); // <--- По умолчанию включено
@@ -8219,6 +8632,13 @@ GUI_CONFIG = {
         undefined === this.runtime.freezeOnDeath && (this.runtime.freezeOnDeath = false);
         undefined === this.runtime.pathFinderKey && (this.runtime.pathFinderKey = null);
         undefined === this.runtime.clipToggleKey && (this.runtime.clipToggleKey = "NONE");
+        undefined === this.runtime.clipQuality && (this.runtime.clipQuality = "Balanced");
+        undefined === this.runtime.clipCodec && (this.runtime.clipCodec = "Auto");
+        undefined === this.runtime.clipAutoPerf && (this.runtime.clipAutoPerf = true);
+        undefined === this.runtime.clipShotKey && (this.runtime.clipShotKey = "NONE");
+        undefined === this.runtime.clipShotDownload && (this.runtime.clipShotDownload = true);
+        undefined === this.runtime.clipFakePlacing && (this.runtime.clipFakePlacing = true);
+        undefined === this.runtime.clipOnlyPvp && (this.runtime.clipOnlyPvp = false);
         undefined === this.runtime.convertBerriesKey && (this.runtime.convertBerriesKey = "NONE");
         undefined === this.runtime.convertPumpkinKey && (this.runtime.convertPumpkinKey = "NONE");
         undefined === this.runtime.convertBreadKey && (this.runtime.convertBreadKey = "NONE");
@@ -8226,7 +8646,7 @@ GUI_CONFIG = {
         undefined === this.runtime.convertTomatoKey && (this.runtime.convertTomatoKey = "NONE");
         undefined === this.runtime.convertThornbushKey && (this.runtime.convertThornbushKey = "NONE");
         undefined === this.runtime.pathFinderX && (this.runtime.pathFinderX = "-1");
-        undefined === this.runtime.pathFinderY && (this.runtime.pathFinderY = "-1"); undefined === this.runtime.guiMovable && (this.runtime.guiMovable = false), undefined === this.runtime.putToChest && (this.runtime.putToChest = 10); undefined === this.runtime.putToChestLabel && (this.runtime.putToChestLabel = true);undefined === this.runtime.putToFurnace && (this.runtime.putToFurnace = 255); undefined === this.runtime.guiResizable && (this.runtime.guiResizable = false),undefined === this.runtime.randomNick && (this.runtime.randomNick = false), undefined === this.runtime.guiPosX && (this.runtime.guiPosX = null), undefined === this.runtime.guiPosY && (this.runtime.guiPosY = null), undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null), undefined === this.runtime.guiSidebarWidth && (this.runtime.guiSidebarWidth = null),undefined === this.runtime.guiColor && (this.runtime.guiColor = "#3b82f6"); undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null),undefined === this.runtime.leaderboardAllies && (this.runtime.leaderboardAllies = true), undefined === this.runtime.guiHeight && (this.runtime.guiHeight = null), undefined === this.runtime.guiFontSize && (this.runtime.guiFontSize = null),undefined === this.runtime.playerRadar && (this.runtime.playerRadar = true),undefined === this.runtime.unitDebugger && (this.runtime.unitDebugger = "None"); undefined === this.runtime.autoIceMode && (this.runtime.autoIceMode = "Heal"); undefined === this.runtime.extractorFuel && (this.runtime.extractorFuel = "Wood"); undefined === this.runtime.guiOpacity && (this.runtime.guiOpacity = 100);
+        undefined === this.runtime.pathFinderY && (this.runtime.pathFinderY = "-1"); undefined === this.runtime.guiMovable && (this.runtime.guiMovable = false), undefined === this.runtime.putToChest && (this.runtime.putToChest = 10); undefined === this.runtime.putToChestLabel && (this.runtime.putToChestLabel = true);undefined === this.runtime.putToFurnace && (this.runtime.putToFurnace = 255); undefined === this.runtime.guiResizable && (this.runtime.guiResizable = false),undefined === this.runtime.randomNick && (this.runtime.randomNick = false), undefined === this.runtime.guiPosX && (this.runtime.guiPosX = null), undefined === this.runtime.guiPosY && (this.runtime.guiPosY = null), undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null), undefined === this.runtime.guiSidebarWidth && (this.runtime.guiSidebarWidth = null),undefined === this.runtime.guiColor && (this.runtime.guiColor = "#3b82f6"); undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null),undefined === this.runtime.leaderboardAllies && (this.runtime.leaderboardAllies = true), undefined === this.runtime.guiHeight && (this.runtime.guiHeight = null), undefined === this.runtime.guiFontSize && (this.runtime.guiFontSize = null),undefined === this.runtime.playerRadar && (this.runtime.playerRadar = true),undefined === this.runtime.unitDebugger && (this.runtime.unitDebugger = "None"); undefined === this.runtime.autoIceMode && (this.runtime.autoIceMode = "Heal"); undefined === this.runtime.extractorFuel && (this.runtime.extractorFuel = "Wood"); undefined === this.runtime.guiOpacity && (this.runtime.guiOpacity = 100); undefined === this.runtime.guiButton && (this.runtime.guiButton = true);
         for (const e of ["farmTLX", "farmTLY", "farmBRX", "farmBRY", "farmSX", "farmSY", "totemX", "totemY", "deathX", "deathY"]) {
           undefined === this.runtime[e] && (this.runtime[e] = 0);
         }
@@ -8438,7 +8858,6 @@ GUI_CONFIG = {
         chestSearchFilter: true,
         damageFlash: true,
         minimapCoords: true,
-        defenseSharedMemory: true,
         macroDropEnabled: true,
         macroDropWhitelist: true,
         autoHat: true,
@@ -8465,7 +8884,6 @@ GUI_CONFIG = {
         autoRespawn: true,
         sendToken: true,
         tokenWebhookUrl: true,
-        defense: true,
         pathFinderClaimKit: true,
         autoSpike: true,
         autoSpikeDoor: true,
@@ -8513,6 +8931,7 @@ GUI_CONFIG = {
         leaderboardAllies: true,
         joinsLeaves: true,
         joinsLeavesMode: true,
+        killFeed: true,
         leaderboardLevels: true,
         movementPredictor: true,
         percentages: true,
@@ -9447,24 +9866,58 @@ class Feature_DaysAlive extends CheatFeatureBase {
       static bindType = null;
       static render = false;
       static enabled = true;
+      static DEBUG = false;
+
+      // Пресеты записи: максимальная ширина видео / стартовый fps клипа / битрейт.
+      // Чем меньше ширина и fps, тем дешевле копирование кадра и кодирование.
+      static PRESETS = {
+        Performance: { width: 1280, fps: 30, bitrate: 4e6 },
+        Balanced: { width: 1280, fps: 60, bitrate: 6e6 },
+        Quality: { width: 1920, fps: 60, bitrate: 10e6 }
+      };
+      // Ступени fps клипа, между которыми переключается авто-регулятор
+      static FPS_LEVELS = [60, 30, 20, 15];
 
       constructor(t) {
         super(t);
         this.isRecording = false;
         this._mediaRecorder = null;
+        this._stream = null;
+        this._track = null;
         this._recordedChunks = [];
         this._lastBlobUrl = null;
         this._lastBlobExt = "webm";
 
-        // Единственный холст для записи: непрозрачный (alpha:false) и не больше 1920px по ширине
+        // Единственный холст для записи: непрозрачный (alpha:false)
         this._cleanCanvas = document.createElement("canvas");
         this._cleanCtx = this._cleanCanvas.getContext("2d", { alpha: false });
+        this._maxWidth = 1280;
+        this._bitrate = 6e6;
 
         this._uiArgs = [];            // пустой массив по умолчанию, чтобы !uiArgs никогда не блокировал захват
         this._uiAlreadyDrawn = false;
         this._sceneCapturedThisFrame = false;
+        this._tickedThisFrame = false;
         this._nextCleanTs = 0;
+        this._level = 0;              // текущая ступень в FPS_LEVELS
+        this._minLevel = 0;           // самая быстрая ступень, которую разрешает пресет
         this._cleanIntervalMs = 1000 / 60;
+
+        // Кэш снимка состояния: списки полей считаются раз в ~2 секунды, а не каждый кадр,
+        // и в кадре больше нет аллокаций (раньше именно они давали GC-подлагивания)
+        this._shape = new WeakMap();
+        this._snap = [];
+
+        // Замер реальной частоты кадров игры (идёт всегда, чтобы к старту записи уже была база)
+        this._lastTickTs = 0;
+        this._winStart = 0;
+        this._winSum = 0;
+        this._winCnt = 0;
+        this._baseRing = [];
+        this._cooldownUntil = 0;
+        this._goodWindows = 0;
+        this._upgradeNeed = 8;
+        this._lastUpgradeAt = 0;
 
         // Самодиагностика: чистый кадр должен регулярно появляться, иначе включается запасной режим
         this._startedAt = 0;
@@ -9477,11 +9930,52 @@ class Feature_DaysAlive extends CheatFeatureBase {
         this._lastProbe = 0;
         this._probe = null;
         this._warned = new Set();
+        this._lastError = null;
         this._sceneBackup = null;
+        this._hitScene = 0;              // когда в последний раз реально вызвался наш draw_scene
+        this._hitUI = 0;                 // ... и наш draw_UI (для диагностики и переустановки хуков)
+        this._hookInfo = null;
+        this._nativeScene = null;
+        this._nativeUI = null;
+        this._reinstalled = false;
+
+        // Safe Clip: последние клипы хранятся в IndexedDB (переживают перезагрузку) и в памяти
+        this._history = [];              // новые сверху, максимум HISTORY_MAX
+        this._historyP = null;
+        this._dbP = null;
+        this._histEl = null;
+        this._histKey = null;
+        this._playingId = null;
+        this._recStartedWall = 0;
+        this._lastClip = null;           // последний записанный клип: { blob, mime, ext, dur, thumb, saved }
+        this._saveOnStop = false;        // стоп по кнопке Safe Clip: сразу сохранить, без вопроса
+        this._suppressChoice = false;    // стоп по кнопке Download Clip: вопрос не нужен
+        this._choiceTimer = 0;
+        this._paused = false;            // запись на паузе: кадры не снимаем, MediaRecorder.pause()
+        this._pauseStartedAt = 0;
+        this._pausedTotal = 0;           // сколько мс клип провёл на паузе (вычитается из длительности)
+        this._autoPaused = false;        // пауза поставлена автоматически режимом Only PVP (боя нет)
+        this._pvpMode = false;           // запись идёт в режиме Only PVP (фиксируется при старте клипа)
+        this._pvpLastSeen = 0;           // когда в последний раз был бой (мс performance.now())
+        this._pvpBadge = null;           // плашка состояния на экране (в клип не попадает - это DOM, а не холст)
+        this._noSceneRedraw = false;     // перерисовка сцены с оригинальным скином в draw_UI-режиме не удалась - больше не пробуем
+        this._pathNoted = null;          // каким путём снимаются чистые кадры (для консоли)
+        this._fakeBuild = { item: -1, last: 0 };   // последний отправленный пакет постройки (для превью в клипе)
+        this._fpAt = 0;                  // кэш превью постройки: когда считали и что получилось
+        this._fpItem = -1;
+        this._shotPending = false;       // скриншот запрошен: ближайший кадр снимается чистым проходом (как кадр клипа)
+        this._shotTimer = 0;
+        this._shotTries = 0;
+        this._shotCanvas = null;
 
         this._keyHandler = e => {
           if (!this.main.is_game_running() || e.repeat || isChatOpen()) return;
           if (e.ctrlKey || e.altKey || e.metaKey) return;
+          const shotKey = this.main.gui?.get("clipShotKey") ?? this.main.SettingsManager?.get("clipShotKey");
+          if (shotKey && shotKey !== "NONE" && e.code === shotKey) {
+            this.takeScreenshot();
+            return;
+          }
           const bindKey = this.main.gui?.get("clipToggleKey") ?? this.main.SettingsManager?.get("clipToggleKey");
           if (!bindKey || bindKey === "NONE" || e.code !== bindKey) return;
 
@@ -9497,36 +9991,263 @@ class Feature_DaysAlive extends CheatFeatureBase {
       init() {
         super.init();
         this._installCleanCaptureHooks();
+        this._loadHistory().catch(e => this._warn("history load failed", e));
+        this._mountTimer = setInterval(() => {
+          try { this._mountSavedList(); } catch (e) { this._warn("mount saved list failed", e); }
+          try {
+            // прогрев кодировщика для тех, кто пишет по горячей клавише и меню клипа не открывает: через 15 с игры, когда нет боя
+            if (!this._prewarmed && !this.isRecording && this.main.is_game_running()) {
+              const nw = performance.now();
+              if (!this._runSince) this._runSince = nw;
+              if (nw - this._runSince > 15000 && !this._pvpNow()) this._prewarmEncoder();
+            } else if (!this.main.is_game_running()) {
+              this._runSince = 0;
+            }
+          } catch (e) { this._warn("prewarm tick failed", e); }
+        }, 700);
+        // Если game ещё не создан, раньше хуки не ставились вообще -> "game draw hooks did not fire". Повторяем попытки.
+        if (!this._hooksInstalled) {
+          let tries = 0;
+          const iv = setInterval(() => {
+            try { this._installCleanCaptureHooks(); } catch (e) { this._fail("hook install", e); }
+            if (this._hooksInstalled || ++tries > 120) clearInterval(iv);
+          }, 500);
+        }
       }
 
-      // ---------- диагностика ----------
+      // ---------- служебное ----------
       _warn(tag, e) {
         if (this._warned.has(tag)) return;
         this._warned.add(tag);
-        try { 0 && console.warn("[ARCT Clip] " + tag, e || ""); } catch (_) {}
+        this._ctxLog("error", tag, e || "");
       }
 
-      _notify(msg, type = "info") {
-        try { this.main.gui?.notify?.("Clip", msg, type); } catch (_) {}
+      // Всё, что пишет клип, идёт через console.context("ARCT Clip") (отдельный источник в консоли), а не через console.log.
+      // Если console.context недоступен (не Chromium) - console.error.
+      _ctxLog(level, ...args) {
+        try {
+          if (!this._cons) this._cons = typeof console.context === "function" ? console.context("ARCT Clip") : console;
+          const c = this._cons;
+          (typeof c[level] === "function" ? c[level] : c.error).call(c, ...args);
+        } catch (_) {}
+      }
+
+      _gameCtx(gameCanvas) {
+        let ctx = this.main.ctx;
+        if (!ctx && gameCanvas) {
+          try { ctx = gameCanvas.getContext("2d"); } catch (_) {}
+        }
+        return ctx || null;
+      }
+
+      _hookDiag() {
+        const now = performance.now();
+        const h = this._hookInfo || {};
+        const age = t => t ? Math.round(now - t) + "ms ago" : "never";
+        return "game=" + !!this.main.game
+          + "; draw_scene hooked=" + !!h.scene + " lastCall=" + age(this._hitScene)
+          + "; draw_UI hooked=" + !!h.ui + " lastCall=" + age(this._hitUI)
+          + "; ctx=" + !!this._gameCtx(this._canvas())
+          + "; frames=" + this._capturedFrames;
+      }
+
+      // gui.notify в этом моде ничего не показывает (пустая функция), поэтому у клипа свой тост.
+      // Это обычный DOM-элемент, в запись он не попадает. Клик по тосту копирует текст.
+      _notify(msg, type = "info", prefix = "Clip") {
+        if (type === "error") this._ctxLog("error", prefix + ": " + msg);
+        try {
+          const old = document.getElementById("arct-clip-toast");
+          if (old) old.remove();
+          const el = document.createElement("div");
+          el.id = "arct-clip-toast";
+          el.textContent = prefix + ": " + msg;
+          el.title = "Click to copy";
+          el.style.cssText = "position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:2147483647;max-width:70vw;"
+            + "padding:10px 14px;border-radius:4px;font:600 13px/1.4 sans-serif;color:#fff;cursor:pointer;"
+            + "box-shadow:0 8px 24px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.12);"
+            + "background:" + (type === "error" ? "rgba(185,28,28,.95)" : "rgba(23,21,27,.95)");
+          el.addEventListener("click", () => {
+            try { navigator.clipboard?.writeText(msg); } catch (_) {}
+            el.remove();
+          });
+          (document.body || document.documentElement).appendChild(el);
+          setTimeout(() => el.remove(), type === "error" ? 15000 : 4000);
+        } catch (_) {}
+      }
+
+      // Запоминаем причину сбоя чистого прохода, чтобы показать её пользователю, а не глотать молча
+      _fail(where, e) {
+        let msg = "";
+        try { msg = String((e && e.message) || e); } catch (_) {}
+        const st = e && e.stack ? String(e.stack).split("\n")[1] : "";
+        this._lastError = where + ": " + msg.slice(0, 120) + (st ? " @" + st.trim().slice(0, 80) : "");
+        this._warn(where + " failed", e);
+      }
+
+      _setting(key, def) {
+        let v;
+        try { v = this.main.gui?.get(key) ?? this.main.SettingsManager?.get(key); } catch (_) {}
+        return v === undefined || v === null ? def : v;
+      }
+
+      _canvas() {
+        return this.main.canvas || document.getElementById("game_canvas");
+      }
+
+      _loadPreset() {
+        const P = Feature_ClipRecorder.PRESETS;
+        const L = Feature_ClipRecorder.FPS_LEVELS;
+        const p = P[this._setting("clipQuality", "Balanced")] || P.Balanced;
+        this._maxWidth = p.width;
+        this._bitrate = p.bitrate;
+        let idx = L.indexOf(p.fps);
+        if (idx < 0) idx = 0;
+        this._minLevel = idx;
+        this._level = idx;
+        this._cleanIntervalMs = 1000 / L[idx];
+      }
+
+      _autoPerf() {
+        return this._setting("clipAutoPerf", true) !== false;
       }
 
       // Холст игры "загрязнён" картинками с другого домена (SecurityError) - записать его невозможно.
       // Проверяем через крошечный холст 1x1, чтобы не читать большой кадр с GPU.
+      // Раньше тут был drawImage + getImageData: это синхронное чтение всего кадра с GPU на CPU (заметный фриз на старте записи
+      // и раз в 30 с). Теперь смотрим флаг origin-clean у _cleanCanvas: чужая картинка из игрового холста переносит "загрязнение"
+      // на него при drawImage, а captureStream() на таком холсте бросает SecurityError - без какого-либо чтения пикселей.
       _isTainted(gameCanvas) {
         try {
-          if (!this._probe) {
-            this._probe = document.createElement("canvas");
-            this._probe.width = 1;
-            this._probe.height = 1;
-            this._probeCtx = this._probe.getContext("2d", { willReadFrequently: true });
-          }
-          this._probeCtx.clearRect(0, 0, 1, 1);
-          this._probeCtx.drawImage(gameCanvas, 0, 0, 1, 1, 0, 0, 1, 1);
-          this._probeCtx.getImageData(0, 0, 1, 1);
+          const cc = this._cleanCanvas;
+          if (!cc || cc.width <= 2) return false;   // кадра ещё нет - проверять нечего
+          const s = cc.captureStream(0);
+          s.getTracks().forEach(tr => tr.stop());
           return false;
         } catch (e) {
           return !!(e && e.name === "SecurityError");
         }
+      }
+
+      // ---------- авто-регулятор: не даёт записи просаживать фпс игры ----------
+      // Раз в секунду сравниваем средний интервал между кадрами с лучшим интервалом за последние ~20 секунд.
+      // Если кадры стали заметно реже - снижаем частоту чистых кадров клипа (60 -> 30 -> 20 -> 15):
+      // дорогой второй рендер сцены тогда делается не каждый кадр. Когда игра снова идёт ровно - возвращаем.
+      _frameTick(now) {
+        const last = this._lastTickTs;
+        this._lastTickTs = now;
+        if (!last) return;
+        const dt = now - last;
+        if (dt <= 0 || dt > 250 || document.hidden) {
+          this._winStart = 0;
+          this._winSum = 0;
+          this._winCnt = 0;
+          return;
+        }
+        if (!this._winStart) this._winStart = now;
+        this._winSum += dt;
+        this._winCnt++;
+        if (now - this._winStart < 1000) return;
+        const mean = this._winSum / this._winCnt;
+        this._winStart = now;
+        this._winSum = 0;
+        this._winCnt = 0;
+        this._onWindow(mean, now);
+      }
+
+      _onWindow(mean, now) {
+        const ring = this._baseRing;
+        ring.push(mean);
+        if (ring.length > 20) ring.shift();
+        if (!this.isRecording || this._fallback || this._paused || !this._autoPerf() || now < this._cooldownUntil) return;
+
+        let base = Infinity;
+        for (let i = 0; i < ring.length; i++) if (ring[i] < base) base = ring[i];
+
+        if (mean > base * 1.25 + 0.8) {
+          // игра просела - снижаем fps клипа; если это произошло сразу после подъёма, ждём дольше до следующего
+          if (now - this._lastUpgradeAt < 15000) this._upgradeNeed = Math.min(this._upgradeNeed * 2, 64);
+          this._goodWindows = 0;
+          this._cooldownUntil = now + 2500;
+          this._setLevel(this._level + 1);
+        } else if (mean < base * 1.12 + 0.5) {
+          if (this._level > this._minLevel && ++this._goodWindows >= this._upgradeNeed) {
+            this._goodWindows = 0;
+            this._lastUpgradeAt = now;
+            this._cooldownUntil = now + 2500;
+            this._setLevel(this._level - 1);
+          }
+        } else {
+          this._goodWindows = 0;
+        }
+      }
+
+      _setLevel(i) {
+        const L = Feature_ClipRecorder.FPS_LEVELS;
+        i = Math.max(this._minLevel, Math.min(L.length - 1, i));
+        if (i === this._level) return;
+        this._level = i;
+        this._cleanIntervalMs = 1000 / L[i];
+        this._updateButtonsUI();
+      }
+
+      // ---------- снимок/откат состояния без аллокаций ----------
+      // Второй проход отрисовки двигает анимации и камеру, поэтому числовые/строковые поля игроков
+      // запоминаются до чистого прохода и возвращаются после него.
+      _grab(obj, nested, snap) {
+        if (!obj || "object" !== typeof obj) return;
+        const hasOwn = Object.prototype.hasOwnProperty;
+        let rec = this._shape.get(obj);
+        if (!rec || ++rec.age > 120) {
+          const ks = [], nk = [];
+          for (const k in obj) {
+            if (!hasOwn.call(obj, k)) continue;
+            const v = obj[k], t = typeof v;
+            if (t === "number" || t === "boolean" || t === "string") {
+              ks.push(k);
+            } else if (nested && v && t === "object" && !Array.isArray(v) && !("undefined" !== typeof Node && v instanceof Node)) {
+              let n = 0;
+              for (const kk in v) { if (++n > 40) break; }
+              if (n <= 40) nk.push(k);
+            }
+          }
+          // age стартует со случайного значения: иначе все объекты пересобирают список полей в один и тот же кадр (раз в ~120 кадров = периодический фриз)
+          rec = { ks, nk, vs: new Array(ks.length), age: (Math.random() * 100) | 0 };
+          this._shape.set(obj, rec);
+        }
+        const ks = rec.ks, vs = rec.vs;
+        for (let j = 0; j < ks.length; j++) vs[j] = obj[ks[j]];
+        snap.push(obj, rec);
+        if (nested) {
+          const nk = rec.nk;
+          for (let j = 0; j < nk.length; j++) {
+            const v = obj[nk[j]];
+            if (v && "object" === typeof v) this._grab(v, false, snap);
+          }
+        }
+      }
+
+      _snapshot() {
+        const snap = this._snap;
+        snap.length = 0;
+        const players = this.main.world?.units?.[A];
+        if (Array.isArray(players)) {
+          for (let i = 0; i < players.length; i++) {
+            const u = players[i];
+            if (u && "object" === typeof u) this._grab(u, true, snap);
+          }
+        }
+        this._grab(this.main.user?.cam, false, snap);
+      }
+
+      _restore() {
+        const snap = this._snap;
+        for (let i = 0; i < snap.length; i += 2) {
+          const o = snap[i], rec = snap[i + 1], ks = rec.ks, vs = rec.vs;
+          for (let j = 0; j < ks.length; j++) {
+            if (o[ks[j]] !== vs[j]) o[ks[j]] = vs[j];
+          }
+        }
+        snap.length = 0;
       }
 
       // Кадр клипа (в _cleanCanvas) + отметка времени для сторожа
@@ -9535,6 +10256,8 @@ class Feature_DaysAlive extends CheatFeatureBase {
           gameCanvas, 0, 0, gameCanvas.width, gameCanvas.height,
           0, 0, this._cleanCanvas.width, this._cleanCanvas.height
         );
+        // captureStream(0): кадр уходит в кодировщик ровно по запросу, без дублей и лишней работы
+        if (this._track) this._track.requestFrame();
         this._lastCleanAt = performance.now();
         this._capturedFrames++;
       }
@@ -9586,15 +10309,18 @@ class Feature_DaysAlive extends CheatFeatureBase {
 
       _watchdogTick() {
         if (!this.isRecording) return;
+        this._pvpTick();
         const now = performance.now();
         // фоновая вкладка: игра не рисует, это не поломка
-        if (document.hidden) {
+        if (document.hidden || this._paused || !this.main.is_game_running()) {
           this._startedAt = Math.max(this._startedAt, now);
           this._lastCleanAt = Math.max(this._lastCleanAt, now);
           return;
         }
-        const gameCanvas = this.main.canvas || document.getElementById("game_canvas");
-        if (gameCanvas && now - this._lastProbe > 3000) {
+        const gameCanvas = this._canvas();
+        // Проверка на "загрязнение" заставляет GPU отдать кадр на CPU, поэтому делаем её редко (раз в 30 с),
+        // иначе раз в несколько секунд была бы заметная микро-просадка
+        if (gameCanvas && now - this._lastProbe > 30000) {
           this._lastProbe = now;
           if (this._isTainted(gameCanvas)) {
             this._warn("canvas tainted", "SecurityError");
@@ -9604,32 +10330,168 @@ class Feature_DaysAlive extends CheatFeatureBase {
           }
         }
         if (!this._fallback && now - Math.max(this._lastCleanAt, this._startedAt) > 1000) {
+          // Хуки вообще не вызываются (game.draw_* перезаписали после нас / игра создана позже) - один раз ставим заново
+          const lastHit = Math.max(this._hitScene, this._hitUI);
+          if (!this._reinstalled && now - lastHit > 1000) {
+            this._reinstalled = true;
+            this._ctxLog("error", "draw hooks are not being called, reinstalling:", this._hookDiag());
+            try { this._reinstallHooks(); } catch (e) { this._fail("hook reinstall", e); }
+            this._startedAt = now;
+            return;
+          }
           this._enterFallback();
         }
       }
 
-      // Запасной режим: визуалы скрываются на время записи (флаг hidden, как в Hidden Mode, но без скрытия меню),
-      // а кадры берутся с уже нарисованного холста в requestAnimationFrame. Двойной рендер не нужен вовсе.
+      _notePath(p) {
+        if (this._pathNoted === p) return;
+        this._pathNoted = p;
+        this._ctxLog("info", "clean capture path: " + p);
+      }
+
+      // ---------- превью постройки только в клипе ----------
+      // Auto Spike / Auto Wall шлют пакет постройки, не выбирая предмет, поэтому в игре нет полупрозрачного превью,
+      // которое видно при ручной постановке. Подмена craft.preview ничего не рисовала, поэтому в чистом кадре клипа
+      // рисуем призрак сами (те же картинки, что у Show Spread) на время серии построек.
+      static PREVIEW_HOLD_MS = 350;
+
+      _noteBuild(item) {
+        if (typeof item !== "number" || item < 0) return;
+        this._fakeBuild.item = item;
+        this._fakeBuild.last = performance.now();
+        this._fpAt = 0;   // сбросить кэш: пакет ушёл - превью нужно уже в ближайшем кадре
+      }
+
+      // Какой предмет авто-функции собираются поставить прямо сейчас (Auto Spike > Auto SpikeDoor > Auto Wall > Auto Bridge/Build).
+      // Берётся по СОСТОЯНИЮ функции, а не по отправленному пакету: призрак появляется сразу, как только функция включилась,
+      // то есть до того, как предмет реально поставили. Порядок тот же, что у Show Spread и run() этих функций.
+      _autoWantedItem() {
+        const reg = this.main.FeatureRegistry;
+        const sp = reg?.getInstance?.("autoSpike");
+        const wl = reg?.getInstance?.("autoWall");
+        const bd = reg?.getInstance?.("autoBuild");
+        let it = false;
+        try {
+          if (sp?.enabled) it = sp.get_item_to_place();
+          else if (sp?._doorEnabled) it = sp.get_door_to_place();
+          else if (wl?.enabled) it = wl.get_item_to_place();
+          if (!it && bd?.enabled) it = bd.get_item_to_place();
+        } catch (e) { it = false; }
+        return typeof it === "number" && it >= 0 ? it : -1;
+      }
+
+      // Дорогие проверки (настройки, инвентарь, приоритеты) раз в ~80 мс, а не в каждом кадре
+      _computeFakePreview(now) {
+        if (this._setting("clipFakePlacing", true) === false) return -1;
+        if (!this.main.is_game_running() || !this.main.user?.alive) return -1;
+        const auto = this._autoWantedItem();
+        if (auto >= 0) return auto;
+        // запасной вариант: пакет постройки ушёл от чего-то ещё (не авто-функции) - держим призрак ещё чуть-чуть
+        const f = this._fakeBuild;
+        if (f.item >= 0 && now - f.last <= Feature_ClipRecorder.PREVIEW_HOLD_MS) return f.item;
+        return -1;
+      }
+
+      _fakePreviewItem() {
+        const now = performance.now();
+        if (now - this._fpAt >= 80) {
+          this._fpAt = now;
+          this._fpItem = this._computeFakePreview(now);
+        }
+        if (this._fpItem < 0) return -1;
+        const craft = this.main.user?.["craft"];
+        if (!craft || craft.crafting) return -1;
+        // если игрок уже выбрал здание сам (или Hidden-режим выбрал его в превью), игра рисует превью без нас
+        if (typeof craft.preview === "number" && craft.preview >= 0) return -1;
+        return this._fpItem;
+      }
+
+      // Призрак строящегося предмета в 120 px от игрока по направлению прицела, полупрозрачный.
+      // Вызывается из чистого прохода сразу после отрисовки сцены (там тот же ctx и камера, что у Show Spread).
+      _drawClipPreview(item) {
+        try {
+          const main = this.main;
+          const ctx = main.ctx;
+          const me = main.get_local_player();
+          const cam = main.user?.cam;
+          if (!ctx || !me || !cam || !Number.isFinite(me.nangle)) return;
+          const spr = main.FeatureRegistry?.getInstance?.("autoSpike")?._ghostSprite?.(item, true);   // true = дефолтный спрайт, не скиновый
+          if (!spr) return;   // для этого предмета нет картинки - лучше ничего, чем серый квадрат
+          ctx.save();
+          ctx.globalAlpha = 0.5;
+          ctx.translate(cam.x + me.x, cam.y + me.y);
+          ctx.rotate(me.nangle);
+          ctx.translate(120, 0);
+          if (1 !== spr.k) ctx.scale(spr.k, spr.k);
+          ctx.drawImage(spr.img, -spr.w / 2, -spr.h / 2, spr.w, spr.h);
+          ctx.restore();
+        } catch (e) {
+          this._warn("clip preview draw failed", e);
+        }
+      }
+
+      // Активный скин-ченджер (скин / аксессуар / сумка / книга подменяются) или null
+      _activeSkinChanger() {
+        const sc = this.main.FeatureRegistry?.getInstance?.("skinChanger");
+        const smg = this.main.SettingsManager;
+        const active = !!sc && sc._ready && (["skinChangerActive", "accChangerActive", "bagChangerActive", "bookChangerActive"].some(k => smg?.get(k)) || !!sc?.hasAllyOverrides?.());
+        return active ? sc : null;
+      }
+
+      // Запасной режим пишет видимый холст, где подмена уже нарисована, - поэтому на время записи отключаем подмену
+      _forceOriginalSkin(on) {
+        const m = this.main;
+        if (!!m._clipForceOriginalSkin === on) return;
+        m._clipForceOriginalSkin = on;
+        try { m.FeatureRegistry?.getInstance?.("skinChanger")?.applySkinChanger?.(); } catch (e) { this._warn("skin restore failed", e); }
+      }
+
+      _reinstallHooks() {
+        this._hooksInstalled = false;
+        this._installCleanCaptureHooks();
+      }
+
+      // Чистые кадры не приходят: визуалы игрока НЕ скрываем (иначе игра сама уходила бы в hidden),
+      // а останавливаем запись и показываем причину
       _enterFallback() {
-        if (this._fallback || !this.isRecording) return;
+        if (!this.isRecording) return;
+        const why = this._lastError || "game draw hooks did not fire";
+        this._ctxLog("error", "Clean capture failed: " + why, this._hookDiag());
+
+        // Настройка clipFallbackVisible = false возвращает старое поведение: просто остановить запись
+        if (this._setting("clipFallbackVisible", true) === false) {
+          this._notify("Clean capture failed (" + why + "). Recording stopped.", "error");
+          this.stopClip();
+          return;
+        }
+
+        // Запасной режим: пишем видимый холст игры через rAF. Визуалы игрока НЕ скрываем (main.hidden не трогаем),
+        // поэтому оверлеи мода попадут в клип - об этом говорим в тосте.
         this._fallback = true;
-        this._fallbackPrevHidden = this.main.hidden;
-        this.main.hidden = true;
-        this._warn("clean capture unavailable, fallback", `no clean frame for 1s (frames so far: ${this._capturedFrames})`);
-        this._notify("Clean capture is unavailable in this mode - recording with visuals hidden.", "info");
-        const tick = () => {
-          this._rafId = 0;
-          if (!this.isRecording || !this._fallback) return;
-          const gameCanvas = this.main.canvas || document.getElementById("game_canvas");
+        const forced = !!this._activeSkinChanger();
+        if (forced) this._forceOriginalSkin(true);
+        this._notify("Clean capture failed (" + why + "). Recording the visible canvas instead - overlays will be in the clip."
+          + (forced ? " Skin changer is switched off until the clip stops." : ""), "error");
+        this._updateButtonsUI();
+        const loop = () => {
+          if (!this.isRecording || !this._fallback) { this._rafId = 0; return; }
+          const gc = this._canvas();
           const now = performance.now();
-          if (gameCanvas && now + 3 >= this._nextCleanTs) {
+          if (gc && !document.hidden && !this._paused && now + 3 >= this._nextCleanTs) {
             this._nextCleanTs = Math.max(this._nextCleanTs + this._cleanIntervalMs, now);
-            this._syncCanvasSizes(gameCanvas);
-            try { this._captureFrame(gameCanvas); } catch (e) { this._warn("fallback capture failed", e); }
+            try {
+              this._syncCanvasSizes(gc);
+              this._captureFrame(gc);
+            } catch (e) {
+              this._fail("fallback capture", e);
+              this._notify("Fallback capture failed (" + (this._lastError || "unknown") + "). Recording stopped.", "error");
+              this.stopClip();
+              return;
+            }
           }
-          this._rafId = requestAnimationFrame(tick);
+          this._rafId = requestAnimationFrame(loop);
         };
-        this._rafId = requestAnimationFrame(tick);
+        this._rafId = requestAnimationFrame(loop);
       }
 
       _leaveFallback() {
@@ -9637,25 +10499,30 @@ class Feature_DaysAlive extends CheatFeatureBase {
           cancelAnimationFrame(this._rafId);
           this._rafId = 0;
         }
-        if (this._fallback) {
-          this._fallback = false;
-          const hm = this.main.FeatureRegistry?.getInstance?.("hiddenMode");
-          this.main.hidden = hm ? !!hm.enabled : this._fallbackPrevHidden;
-        }
+        this._forceOriginalSkin(false);
+        this._fallback = false;
       }
 
       _cleanupRecording() {
+        if (this._paused) {
+          this._pausedTotal += performance.now() - this._pauseStartedAt;
+          this._paused = false;
+        }
+        this._autoPaused = false;
+        this._pvpMode = false;
         this._stopWatchdog();
         this._leaveFallback();
+        this._snap.length = 0;
       }
 
       _syncCanvasSizes(gameCanvas) {
         if (this.isRecording && this._cleanCanvas.width > 2) return;
         const gw = gameCanvas.width || window.innerWidth;
         const gh = gameCanvas.height || window.innerHeight;
-        const k = Math.min(1, 1920 / gw);
-        const w = Math.max(2, Math.round(gw * k));
-        const h = Math.max(2, Math.round(gh * k));
+        const k = Math.min(1, this._maxWidth / gw);
+        // размеры кратны 2: так кодировщик не делает лишнюю подгонку кадра
+        const w = Math.max(2, Math.round(gw * k / 2) * 2);
+        const h = Math.max(2, Math.round(gh * k / 2) * 2);
         if (this._cleanCanvas.width !== w || this._cleanCanvas.height !== h) {
           this._cleanCanvas.width = w;
           this._cleanCanvas.height = h;
@@ -9671,9 +10538,11 @@ class Feature_DaysAlive extends CheatFeatureBase {
         const hasScene = typeof game.draw_scene === "function";
         const hasUI = typeof game.draw_UI === "function";
 
-        const nativeDrawScene = hasScene ? game.draw_scene.bind(rawGame) : null;
-        const nativeDrawUI = hasUI ? game.draw_UI.bind(rawGame) : null;
+        // При переустановке не заворачиваем собственную обёртку в ещё одну - берём сохранённые оригиналы
+        const nativeDrawScene = hasScene ? (game.draw_scene.__arctClip && this._nativeScene ? this._nativeScene : game.draw_scene.bind(rawGame)) : null;
+        const nativeDrawUI = hasUI ? (game.draw_UI.__arctClip && this._nativeUI ? this._nativeUI : game.draw_UI.bind(rawGame)) : null;
         const self = this;
+        this._hookInfo = { scene: !!nativeDrawScene, ui: !!nativeDrawUI };
 
         const clearCanvas = (ctx, canvas) => {
           ctx.save();
@@ -9682,113 +10551,84 @@ class Feature_DaysAlive extends CheatFeatureBase {
           ctx.restore();
         };
 
-        const hasOwn = Object.prototype.hasOwnProperty;
-        const grabState = (entries, obj) => {
-          if (!obj || "object" !== typeof obj) return;
-          const ks = [],
-            vs = [];
-          for (const k in obj) {
-            if (!hasOwn.call(obj, k)) continue;
-            const v = obj[k],
-              t = typeof v;
-            if ("number" === t || "boolean" === t || "string" === t) {
-              ks.push(k);
-              vs.push(v);
-            }
-          }
-          entries.push([obj, ks, vs]);
-        };
-
-        const snapshotState = (main) => {
-          const entries = [];
-          const players = main.world?.units?.[A];
-          if (Array.isArray(players)) {
-            for (let i = 0; i < players.length; i++) {
-              const u = players[i];
-              if (!u || "object" !== typeof u) continue;
-              grabState(entries, u);
-              for (const k in u) {
-                if (!hasOwn.call(u, k)) continue;
-                const v = u[k];
-                if (!v || "object" !== typeof v || Array.isArray(v) || ("undefined" !== typeof Node && v instanceof Node)) continue;
-                let n = 0;
-                for (const kk in v) {
-                  if (++n > 40) break;
-                }
-                n <= 40 && grabState(entries, v);
-              }
-            }
-          }
-          grabState(entries, main.user?.cam);
-          return entries;
-        };
-
-        const restoreState = (entries) => {
-          for (let i = 0; i < entries.length; i++) {
-            const [o, ks, vs] = entries[i];
-            for (let j = 0; j < ks.length; j++) {
-              if (o[ks[j]] !== vs[j]) o[ks[j]] = vs[j];
-            }
-          }
+        const skinActive = () => {
+          const sc = self.main.FeatureRegistry?.getInstance?.("skinChanger");
+          const smg = self.main.SettingsManager;
+          const active = !!sc && sc._ready && (["skinChangerActive", "accChangerActive", "bagChangerActive", "bookChangerActive"].some(k => smg?.get(k)) || !!sc?.hasAllyOverrides?.());
+          return active ? sc : null;
         };
 
         // 1. Штатный перехват через draw_scene (если draw_scene сбиндился для этого мода)
         if (nativeDrawScene) {
           game.draw_scene = function (...args) {
+            const now = performance.now();
+            self._hitScene = now;
+            self._frameTick(now);
+            self._tickedThisFrame = true;
             self._uiAlreadyDrawn = false;
             self._sceneCapturedThisFrame = false;
 
-            if (!self.isRecording || self._fallback) {
+            const rec = self.isRecording && !self._fallback && !self._paused;
+            const shot = self._shotPending;   // разовый скриншот тоже идёт через чистый проход
+            if (!rec && !shot) {
               return nativeDrawScene(...args);
             }
 
-            const gameCanvas = self.main.canvas || document.getElementById("game_canvas");
-            const ctx = self.main.ctx;
+            const gameCanvas = self._canvas();
+            const ctx = self._gameCtx(gameCanvas);
             const uiArgs = self._uiArgs || [];
-            const now = performance.now();
 
-            if (!gameCanvas || !ctx || now + 3 < self._nextCleanTs) {
+            // Нет холста/контекста: кадр здесь не берём, но и не помечаем сцену снятой - его снимет draw_UI-путь
+            // (раньше из-за пустого main.ctx кадры не снимались вообще и сторож останавливал запись)
+            if (!gameCanvas || !ctx) {
+              return nativeDrawScene(...args);
+            }
+            // Кадр пропускаем по расписанию (fps клипа): тогда сцена рисуется один раз, как обычно
+            const due = rec && now + 3 >= self._nextCleanTs;
+            if (!due && !shot) {
               self._sceneCapturedThisFrame = true;
               return nativeDrawScene(...args);
             }
-            self._nextCleanTs = Math.max(self._nextCleanTs + self._cleanIntervalMs, now);
-            self._syncCanvasSizes(gameCanvas);
+            if (due) {
+              self._nextCleanTs = Math.max(self._nextCleanTs + self._cleanIntervalMs, now);
+              self._syncCanvasSizes(gameCanvas);
+            }
 
             const prevHidden = self.main.hidden;
-            let snap = [];
             try {
-              snap = snapshotState(self.main);
+              self._snapshot();
             } catch (e) {
+              self._snap.length = 0;
               self._warn("state snapshot failed", e);
             }
-            const sc = self.main.FeatureRegistry?.getInstance?.("skinChanger");
-            const smg = self.main.SettingsManager;
-            const scActive = !!sc && sc._ready && ["skinChangerActive", "accChangerActive", "bagChangerActive", "bookChangerActive"].some(k => smg?.get(k));
+            const sc = skinActive();
 
+            const fp = self._fakePreviewItem();
             self.main.hidden = true;
             self.main._renderingCleanFrame = true;
             let res;
             let ok = false;
             try {
-              try {
-                scActive && sc.applySkinChanger();
-              } catch (e) {}
+              try { sc && sc.applySkinChanger(); } catch (e) {}
               res = nativeDrawScene(...args);
+              if (fp >= 0) self._drawClipPreview(fp);
               if (nativeDrawUI) {
                 nativeDrawUI(...uiArgs);
               }
-              self._captureFrame(gameCanvas);
+              if (due) self._captureFrame(gameCanvas);
+              if (shot) self._captureShot(gameCanvas);
+              self._notePath("scene");
               ok = true;
               self._sceneCapturedThisFrame = true;
             } catch (e) {
-              self._warn("scene clean pass failed", e);
+              self._fail("scene pass", e);
             } finally {
-              restoreState(snap);
+              try { self._restore(); } catch (e) { self._snap.length = 0; }
               self.main.hidden = prevHidden;
+              // флаг _renderingCleanFrame снимаем ПОСЛЕ applySkinChanger: _restore() вернул в юнит подменённый скин,
+              // и скин-ченджер не должен принять его за «оригинальный» (см. _syncOrig)
+              try { sc && sc.applySkinChanger(); } catch (e) {}
               self.main._renderingCleanFrame = false;
-              try {
-                scActive && sc.applySkinChanger();
-              } catch (e) {}
             }
 
             if (prevHidden) {
@@ -9799,6 +10639,8 @@ class Feature_DaysAlive extends CheatFeatureBase {
             clearCanvas(ctx, gameCanvas);
             return nativeDrawScene(...args);
           };
+          game.draw_scene.__arctClip = true;
+          self._nativeScene = nativeDrawScene;
         }
 
         // 2. Перехват draw_UI:
@@ -9809,43 +10651,75 @@ class Feature_DaysAlive extends CheatFeatureBase {
         if (nativeDrawUI) {
           game.draw_UI = function (...args) {
             self._uiArgs = args;
+            self._hitUI = performance.now();
+            if (!self._tickedThisFrame) self._frameTick(self._hitUI);
+            self._tickedThisFrame = false;
+
             if (self._uiAlreadyDrawn) {
               self._uiAlreadyDrawn = false;
               return;
             }
 
-            if (self.isRecording && !self._fallback && !self._sceneCapturedThisFrame && !self.main._renderingCleanFrame) {
-              const gameCanvas = self.main.canvas || document.getElementById("game_canvas");
+            const rec = self.isRecording && !self._fallback && !self._paused;
+            const shot = self._shotPending;
+            if ((rec || shot) && !self._sceneCapturedThisFrame && !self.main._renderingCleanFrame) {
+              const gameCanvas = self._canvas();
               const now = performance.now();
+              const due = rec && now + 3 >= self._nextCleanTs;
 
-              if (gameCanvas && now + 3 >= self._nextCleanTs) {
-                self._nextCleanTs = Math.max(self._nextCleanTs + self._cleanIntervalMs, now);
-                self._syncCanvasSizes(gameCanvas);
+              if (gameCanvas && (due || shot)) {
+                if (due) {
+                  self._nextCleanTs = Math.max(self._nextCleanTs + self._cleanIntervalMs, now);
+                  self._syncCanvasSizes(gameCanvas);
+                }
 
                 const prevHidden = self.main.hidden;
-                const sc = self.main.FeatureRegistry?.getInstance?.("skinChanger");
-                const smg = self.main.SettingsManager;
-                const scActive = !!sc && sc._ready && ["skinChangerActive", "accChangerActive", "bagChangerActive", "bookChangerActive"].some(k => smg?.get(k));
+                const sc = skinActive();
 
                 // Сцена игры уже нарисована на gameCanvas к моменту входа в draw_UI.
-                // Вызываем цепочку draw_UI с флагом hidden = true (все HUD-читы: FPS, Ping, Timers, Radar, Percentages пропускают себя),
+                // Вызываем цепочку draw_UI с флагом hidden = true (все HUD-читы пропускают себя),
                 // копируем чистый кадр в _cleanCanvas, и если игрок не в hidden — вызываем цепочку повторно с hidden = false.
                 // Сохраняем сцену ДО чистого UI, чтобы потом нарисовать обычный UI не поверх чистого
                 const backedUp = !prevHidden && self._backupScene(gameCanvas);
 
+                // Скин-ченджер активен: сцена уже нарисована с подменённым скином, поэтому для чистого кадра перерисовываем её
+                // с оригинальным (draw_scene вызывается без аргументов). Состояние игроков откатывается так же, как в draw_scene-пути.
+                // превью постройки может рисоваться вместе со сценой, поэтому для него сцену тоже перерисовываем
+                // (призрак постройки теперь рисуется поверх уже готовой сцены, поэтому из-за него сцену больше не перерисовываем -
+                // при долго зажатом Auto Spike это был бы лишний полный рендер на каждом кадре клипа)
+                const redrawScene = !!(sc && backedUp && nativeDrawScene && !self._noSceneRedraw);
+                if (redrawScene) {
+                  try { self._snapshot(); } catch (e) { self._snap.length = 0; self._warn("state snapshot failed", e); }
+                }
+
+                const fp = self._fakePreviewItem();
                 self.main.hidden = true;
                 self.main._renderingCleanFrame = true;
                 let res;
                 try {
-                  try { scActive && sc.applySkinChanger(); } catch (e) {}
+                  try { sc && sc.applySkinChanger(); } catch (e) {}
+                  if (redrawScene) {
+                    try {
+                      nativeDrawScene();
+                    } catch (e) {
+                      // перерисовка не удалась: больше не пробуем, возвращаем сцену из бэкапа и снимаем кадр как раньше
+                      self._noSceneRedraw = true;
+                      self._fail("scene redraw", e);
+                      try { self._restoreScene(self._gameCtx(gameCanvas)); } catch (_) {}
+                    }
+                  }
+                  if (fp >= 0 && (backedUp || prevHidden)) self._drawClipPreview(fp);
                   res = nativeDrawUI(...args);
-                  self._captureFrame(gameCanvas);
+                  if (due) self._captureFrame(gameCanvas);
+                  if (shot) self._captureShot(gameCanvas);
+                  self._notePath(redrawScene && !self._noSceneRedraw ? "ui + scene redraw (original skin)" : "ui");
                 } catch (e) {
-                  self._warn("ui clean pass failed", e);
+                  self._fail("ui pass", e);
                 } finally {
+                  try { self._restore(); } catch (e) { self._snap.length = 0; }
                   self.main.hidden = prevHidden;
+                  try { sc && sc.applySkinChanger(); } catch (e) {}
                   self.main._renderingCleanFrame = false;
-                  try { scActive && sc.applySkinChanger(); } catch (e) {}
                 }
 
                 if (prevHidden) {
@@ -9860,6 +10734,8 @@ class Feature_DaysAlive extends CheatFeatureBase {
             self._sceneCapturedThisFrame = false;
             return nativeDrawUI(...args);
           };
+          game.draw_UI.__arctClip = true;
+          self._nativeUI = nativeDrawUI;
         }
       }
 
@@ -9867,14 +10743,25 @@ class Feature_DaysAlive extends CheatFeatureBase {
         const startBtn = document.querySelector('.azon-gui-button[data-key="clipStartBtn"]');
         const stopBtn = document.querySelector('.azon-gui-button[data-key="clipStopBtn"]');
         const dlBtn = document.querySelector('.azon-gui-button[data-key="clipDownloadBtn"]');
+        const pauseBtn = document.querySelector('.azon-gui-button[data-key="clipPauseBtn"]');
+        this._updateSafeUI();
+        this._updatePvpBadge();
 
         if (startBtn) {
-          startBtn.textContent = this.isRecording ? "● Recording Clean Game..." : "Start Clip";
+          const fps = Feature_ClipRecorder.FPS_LEVELS[this._level];
+          startBtn.textContent = this.isRecording
+            ? (this._paused ? (this._autoPaused ? "● Only PVP · waiting for a fight" : "\u23F8 Paused") : this._fallback ? "● Recording (visible canvas)..." : this._pvpMode ? `● Recording PVP · ${fps} fps` : `● Recording Clean Game · ${fps} fps`)
+            : "Start Clip";
           startBtn.style.setProperty("background", this.isRecording ? "rgba(239, 68, 68, 0.25)" : "rgba(255, 255, 255, 0.05)", "important");
           startBtn.style.setProperty("border-color", this.isRecording ? "#ef4444" : "rgba(255, 255, 255, 0.05)", "important");
         }
         if (stopBtn) {
           stopBtn.style.setProperty("opacity", this.isRecording ? "1" : "0.5", "important");
+        }
+        if (pauseBtn) {
+          pauseBtn.textContent = this._paused ? "Resume Clip" : "Pause Clip";
+          pauseBtn.style.setProperty("opacity", this.isRecording ? "1" : "0.5", "important");
+          pauseBtn.style.setProperty("border-color", this._paused ? "#f59e0b" : "rgba(255, 255, 255, 0.05)", "important");
         }
         if (dlBtn) {
           const hasClip = Boolean(this._lastBlobUrl);
@@ -9883,33 +10770,98 @@ class Feature_DaysAlive extends CheatFeatureBase {
         }
       }
 
+      // Кодек клипа. Auto = как раньше (H.264 первым). VP8 - программный кодировщик: стартует без обращения к GPU-процессу.
+      _pickMime() {
+        const all = {
+          h264: [{ mime: "video/mp4;codecs=avc1", ext: "mp4" }, { mime: "video/webm;codecs=h264", ext: "webm" }],
+          vp8: [{ mime: "video/webm;codecs=vp8", ext: "webm" }],
+          vp9: [{ mime: "video/webm;codecs=vp9", ext: "webm" }],
+          any: [{ mime: "video/webm", ext: "webm" }]
+        };
+        const choice = String(this._setting("clipCodec", "Auto"));
+        const order = "VP8" === choice ? [all.vp8, all.h264, all.vp9, all.any]
+          : "H.264" === choice ? [all.h264, all.vp8, all.vp9, all.any]
+          : [all.h264, all.vp8, all.vp9, all.any];
+        for (const group of order) {
+          for (const item of group) {
+            if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(item.mime)) return item;
+          }
+        }
+        return { mime: "", ext: "webm" };
+      }
+
+      // Прогрев кодировщика. Самый первый запуск MediaRecorder (особенно H.264 через GPU-процесс) блокирует отрисовку страницы
+      // на полсекунды и дольше - в записи видно как полная заморозка игры в момент Start Clip. Эту цену платим заранее:
+      // когда игрок открыл вкладку Clip в меню, либо спустя 15 с игры вне боя. Дальше старт записи идёт без заморозки.
+      _prewarmEncoder() {
+        if (this._prewarmed || this.isRecording || typeof MediaRecorder === "undefined") return;
+        if ("VP8" === this._setting("clipCodec", "Auto")) return;   // программный кодировщик не блокирует GPU-процесс - прогрев не нужен
+        this._prewarmed = true;
+        try {
+          const gc = this._canvas();
+          const P = Feature_ClipRecorder.PRESETS[this._setting("clipQuality", "Balanced")] || Feature_ClipRecorder.PRESETS.Balanced;
+          const gw = (gc && gc.width) || window.innerWidth, gh = (gc && gc.height) || window.innerHeight;
+          const k = Math.min(1, P.width / gw);
+          const cv = document.createElement("canvas");
+          cv.width = Math.max(2, Math.round(gw * k / 2) * 2);   // тот же размер, что у реального клипа
+          cv.height = Math.max(2, Math.round(gh * k / 2) * 2);
+          const cx = cv.getContext("2d", { alpha: false });
+          cx.fillStyle = "#101010";
+          cx.fillRect(0, 0, cv.width, cv.height);
+          const stream = cv.captureStream(0);
+          const track = stream.getVideoTracks()[0];
+          const picked = this._pickMime();
+          let rec;
+          try {
+            rec = new MediaRecorder(stream, picked.mime ? { mimeType: picked.mime, videoBitsPerSecond: P.bitrate } : { videoBitsPerSecond: P.bitrate });
+          } catch (e) {
+            rec = new MediaRecorder(stream);
+          }
+          rec.ondataavailable = () => {};
+          rec.start();
+          try { track && track.requestFrame && track.requestFrame(); } catch (_) {}
+          setTimeout(() => {
+            try { cx.fillStyle = "#202020"; cx.fillRect(0, 0, cv.width, cv.height); track && track.requestFrame && track.requestFrame(); } catch (_) {}
+          }, 150);
+          setTimeout(() => {
+            try { if (rec.state !== "inactive") rec.stop(); } catch (_) {}
+            try { stream.getTracks().forEach(tr => tr.stop()); } catch (_) {}
+          }, 700);
+        } catch (e) {
+          this._warn("encoder prewarm failed", e);
+        }
+      }
+
       startClip() {
         if (this.isRecording) return;
-        const gameCanvas = this.main.canvas || document.getElementById("game_canvas");
+        const gameCanvas = this._canvas();
         if (!gameCanvas) return;
-
-        // Холст игры "загрязнён" (чужие картинки без CORS) - записать нельзя, говорим об этом сразу
-        this._probe = null;
-        if (this._isTainted(gameCanvas)) {
-          this._warn("canvas tainted", "SecurityError");
-          this._notify("This server's game canvas is cross-origin tainted - the clip can't be recorded here.", "error");
-          return;
-        }
 
         this._warned.clear();
         this._fallback = false;
+        this._reinstalled = false;
         this._capturedFrames = 0;
+        this._hideChoice();
+        this._pathNoted = null;
+        this._noSceneRedraw = false;
+        this._lastClip = null;
+        this._saveOnStop = false;
+        this._suppressChoice = false;
+        try { this._installCleanCaptureHooks(); } catch (e) { this._fail("hook install", e); }
         this._lastCleanAt = 0;
         this._startedAt = performance.now();
         this._lastProbe = this._startedAt;
 
-        this._syncCanvasSizes(gameCanvas);
-        this._recordedChunks = [];
+        this._loadPreset();
+        this._goodWindows = 0;
+        this._upgradeNeed = 8;
+        this._lastUpgradeAt = 0;
+        this._cooldownUntil = this._startedAt + 3000;
 
-        if (this._lastBlobUrl) {
-          URL.revokeObjectURL(this._lastBlobUrl);
-          this._lastBlobUrl = null;
-        }
+        // перед новой записью холст должен подстроиться под выбранный пресет
+        this._cleanCanvas.width = 2;
+        this._cleanCanvas.height = 2;
+        this._syncCanvasSizes(gameCanvas);
 
         // Заполняем первый кадр сразу при старте, чтобы MediaRecorder не ждал впустую
         try {
@@ -9919,45 +10871,85 @@ class Feature_DaysAlive extends CheatFeatureBase {
           );
         } catch (e) {}
 
-        const stream = this._cleanCanvas.captureStream(60);
-        const mimeTypes = [
-          { mime: "video/mp4;codecs=avc1", ext: "mp4" },
-          { mime: "video/webm;codecs=h264", ext: "webm" },
-          { mime: "video/webm;codecs=vp8", ext: "webm" },
-          { mime: "video/webm;codecs=vp9", ext: "webm" },
-          { mime: "video/webm", ext: "webm" }
-        ];
+        // Холст игры "загрязнён" (чужие картинки без CORS) - записать нельзя, говорим об этом сразу.
+        // Проверка идёт по первому кадру в _cleanCanvas (без чтения пикселей с GPU), поэтому состояние записи ещё не менялось.
+        if (this._isTainted(gameCanvas)) {
+          this._warn("canvas tainted", "SecurityError");
+          this._notify("This server's game canvas is cross-origin tainted - the clip can't be recorded here.", "error");
+          return;
+        }
 
-        let selectedMime = "";
-        this._lastBlobExt = "webm";
-        for (const item of mimeTypes) {
-          if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(item.mime)) {
-            selectedMime = item.mime;
-            this._lastBlobExt = item.ext;
-            break;
+        this._recordedChunks = [];
+        if (this._lastBlobUrl) {
+          URL.revokeObjectURL(this._lastBlobUrl);
+          this._lastBlobUrl = null;
+        }
+
+        // captureStream(0) + requestFrame(): кадры уходят в кодировщик только когда мы их сами сняли.
+        // Если браузер не умеет requestFrame - обычный captureStream с частотой пресета.
+        let stream = null;
+        try {
+          stream = this._cleanCanvas.captureStream(0);
+          this._track = stream.getVideoTracks()[0] || null;
+          if (!this._track || typeof this._track.requestFrame !== "function") {
+            stream.getTracks().forEach(t => t.stop());
+            stream = this._cleanCanvas.captureStream(Feature_ClipRecorder.FPS_LEVELS[this._minLevel]);
+            this._track = null;
+          }
+        } catch (e) {
+          this._warn("captureStream failed", e);
+          this._notify("Can't capture the game canvas here - the clip can't be recorded.", "error");
+          return;
+        }
+        this._stream = stream;
+        if (this._track) {
+          try { this._track.requestFrame(); } catch (e) {}
+        }
+
+        const picked = this._pickMime();
+        const selectedMime = picked.mime;
+        this._lastBlobExt = picked.ext;
+
+        try {
+          const options = selectedMime ? { mimeType: selectedMime, videoBitsPerSecond: this._bitrate } : { videoBitsPerSecond: this._bitrate };
+          this._mediaRecorder = new MediaRecorder(stream, options);
+        } catch (e) {
+          try {
+            this._mediaRecorder = new MediaRecorder(stream);
+          } catch (e2) {
+            this._warn("MediaRecorder failed", e2);
+            this._notify("MediaRecorder is not available - the clip can't be recorded.", "error");
+            stream.getTracks().forEach(t => t.stop());
+            this._stream = null;
+            this._track = null;
+            return;
           }
         }
 
-        try {
-          const options = selectedMime ? { mimeType: selectedMime, videoBitsPerSecond: 8000000 } : { videoBitsPerSecond: 8000000 };
-          this._mediaRecorder = new MediaRecorder(stream, options);
-        } catch (e) {
-          this._mediaRecorder = new MediaRecorder(stream);
-        }
-
-        this._mediaRecorder.ondataavailable = ev => {
+        const rec = this._mediaRecorder;
+        rec.ondataavailable = ev => {
           if (ev.data && ev.data.size > 0) {
             this._recordedChunks.push(ev.data);
           }
         };
 
-        this._mediaRecorder.onstop = () => {
-          if (this._recordedChunks.length > 0) {
+        rec.onstop = () => {
+          // Only PVP: боя не было, ни одного кадра не снято - сохранять нечего
+          const noFight = this._pvpMode && this._capturedFrames === 0;
+          if (noFight) this._notify("Only PVP: no fight was recorded, nothing to save.");
+          if (this._recordedChunks.length > 0 && !noFight) {
             const blob = new Blob(this._recordedChunks, {
-              type: this._mediaRecorder?.mimeType || "video/webm"
+              type: rec.mimeType || "video/webm"
             });
             this._lastBlobUrl = URL.createObjectURL(blob);
+            this._onClipReady(blob, rec.mimeType || "video/webm");
           }
+          this._saveOnStop = false;
+          this._suppressChoice = false;
+          this._recordedChunks = [];
+          try { this._stream?.getTracks().forEach(t => t.stop()); } catch (e) {}
+          this._stream = null;
+          this._track = null;
           this.isRecording = false;
           this._cleanupRecording();
           this._updateButtonsUI();
@@ -9965,8 +10957,157 @@ class Feature_DaysAlive extends CheatFeatureBase {
 
         this.isRecording = true;
         this._nextCleanTs = 0;
-        this._mediaRecorder.start(1000);
+        this._recStartedWall = performance.now();
+        this._paused = false;
+        this._pauseStartedAt = 0;
+        this._pausedTotal = 0;
+        this._autoPaused = false;
+        // режим Only PVP фиксируем на время этой записи; пока боя нет - сразу на паузу
+        this._pvpMode = this._setting("clipOnlyPvp", false) === true;
+        this._pvpLastSeen = -1e9;
+        rec.start(1000);
+        // rec.start() может блокировать поток (запуск кодировщика): отсчёт сторожа и регулятора начинаем только после него,
+        // иначе сторож примет эту паузу за отсутствие чистых кадров и уйдёт в запасной режим
+        this._startedAt = performance.now();
+        this._lastProbe = this._startedAt;
+        this._cooldownUntil = this._startedAt + 3000;
+        this._lastTickTs = 0;
         this._startWatchdog();
+        this._pvpTick();
+        this._updateButtonsUI();
+      }
+
+      // ---------- Only PVP ----------
+      // Запись включена, но по-настоящему снимает только пока рядом бой: ты с оружием и рядом чужой игрок с оружием.
+      // Геар = боевое оружие в руках (sword/spear/axe, молот, пиратский меч, лук); шлем не обязателен. Когда боя нет - MediaRecorder на паузе,
+      // поэтому в клипе только сами PvP-моменты, без пустых отрезков.
+      static PVP_RANGE = 800;      // px: чужого игрока дальше этого расстояния за бой не считаем
+      static PVP_HOLD_MS = 5000;   // сколько держать запись после того, как бой закончился (смена оружия, отбегание)
+
+      _hasGear(u) {
+        if (!u) return false;
+        // главное - оружие в руках (sword/spear/axe, а также молот, пиратский меч, лук); шлем не нужен
+        return getWeaponType(u.right) !== -1;
+      }
+
+      _pvpNow() {
+        const m = this.main;
+        if (!m.is_game_running() || !m.user?.alive) return false;
+        const me = m.get_local_player();
+        if (!me || !this._hasGear(me)) return false;
+        const units = m.world?.units?.[A];
+        if (!units) return false;
+        const R = Feature_ClipRecorder.PVP_RANGE;
+        for (let i = 0; i < units.length; i++) {
+          const u = units[i];
+          if (!u || u === me || u.pid === me.pid || isAlly(u.pid, m)) continue;
+          if (Math.hypot(u.x - me.x, u.y - me.y) <= R && this._hasGear(u)) return true;
+        }
+        return false;
+      }
+
+      // Вызывается сторожем (раз в 250 мс): ставит запись на паузу / снимает с паузы по наличию боя
+      _pvpTick() {
+        if (!this.isRecording || !this._pvpMode || !this._mediaRecorder) return;
+        if (this._paused && !this._autoPaused) return;   // ручная пауза важнее
+        const now = performance.now();
+        if (this._pvpNow()) this._pvpLastSeen = now;
+        const idle = now - this._pvpLastSeen > Feature_ClipRecorder.PVP_HOLD_MS;
+        if (idle && !this._paused) this._setAutoPause(true);
+        else if (!idle && this._paused && this._autoPaused) this._setAutoPause(false);
+      }
+
+      _setAutoPause(on) {
+        const rec = this._mediaRecorder;
+        if (!rec) return;
+        const now = performance.now();
+        try {
+          if (on) {
+            if (rec.state !== "recording") return;
+            rec.pause();
+            this._paused = true;
+            this._autoPaused = true;
+            this._pauseStartedAt = now;
+          } else {
+            if (rec.state !== "paused") return;
+            rec.resume();
+            this._pausedTotal += now - this._pauseStartedAt;
+            this._paused = false;
+            this._autoPaused = false;
+            // сторожу и расписанию кадров нужна свежая точка отсчёта, иначе он решит, что кадры пропали
+            this._nextCleanTs = 0;
+            this._startedAt = now;
+            this._lastCleanAt = now;
+            this._cooldownUntil = now + 2500;
+            this._lastTickTs = 0;
+          }
+        } catch (e) {
+          this._warn("only pvp pause", e);
+        }
+        this._updateButtonsUI();
+      }
+
+      // Плашка сверху экрана: видно, снимает ли клип сейчас. Это DOM-элемент, в запись она не попадает.
+      _updatePvpBadge() {
+        try {
+          const show = this.isRecording && this._pvpMode;
+          let el = this._pvpBadge;
+          if (!show) {
+            if (el) { el.remove(); this._pvpBadge = null; }
+            return;
+          }
+          if (!el || !el.isConnected) {
+            el = this._pvpBadge = document.createElement("div");
+            el.id = "arct-clip-pvp-badge";
+            el.style.cssText = "position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2147483646;pointer-events:none;"
+              + "padding:4px 12px;border-radius:999px;font:700 12px/1.4 sans-serif;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.4);";
+            (document.body || document.documentElement).appendChild(el);
+          }
+          if (this._paused && !this._autoPaused) {
+            el.textContent = "\u23F8 Clip paused";
+            el.style.background = "rgba(180,120,10,.9)";
+          } else if (this._paused) {
+            el.textContent = "PVP clip \u00B7 waiting for a fight";
+            el.style.background = "rgba(60,60,70,.9)";
+          } else {
+            el.textContent = "\u25CF REC \u00B7 PVP";
+            el.style.background = "rgba(220,38,38,.92)";
+          }
+        } catch (e) {}
+      }
+
+      // Пауза / продолжить: MediaRecorder.pause() не пишет кадры, а мы заодно не рисуем лишний чистый проход
+      togglePause() {
+        if (!this.isRecording || !this._mediaRecorder) return;
+        // Автопауза Only PVP: нажатие забирает паузу себе (дальше она ручная), повторное нажатие продолжит запись
+        if (this._paused && this._autoPaused) {
+          this._autoPaused = false;
+          this._updateButtonsUI();
+          return;
+        }
+        const rec = this._mediaRecorder;
+        const now = performance.now();
+        try {
+          if (this._paused) {
+            rec.resume();
+            this._pausedTotal += now - this._pauseStartedAt;
+            this._paused = false;
+            // сторожу и расписанию кадров нужна свежая точка отсчёта, иначе он решит, что кадры пропали
+            this._nextCleanTs = 0;
+            this._startedAt = now;
+            this._lastCleanAt = now;
+            this._cooldownUntil = now + 2500;
+            this._lastTickTs = 0;
+          } else {
+            if (rec.state !== "recording") return;
+            rec.pause();
+            this._paused = true;
+            this._pauseStartedAt = now;
+          }
+        } catch (e) {
+          this._fail("pause", e);
+          this._notify("Couldn't " + (this._paused ? "resume" : "pause") + " the clip (" + (this._lastError || "unknown") + ").", "error");
+        }
         this._updateButtonsUI();
       }
 
@@ -9982,8 +11123,534 @@ class Feature_DaysAlive extends CheatFeatureBase {
         this._updateButtonsUI();
       }
 
+      // ================= Safe Clip: последние клипы без скачивания =================
+      static HISTORY_MAX = 10;
+
+      // Кнопка Save Clip (рядом с Download Clip) = "сохранить клип в раздел Safe Clip":
+      //  - идёт запись: останавливает её и сразу сохраняет;
+      //  - записи нет, но есть последний несохранённый клип: сохраняет его.
+      // Если нажать обычный Stop Clip, появится выбор "Download / Save".
+      saveClip() {
+        if (this.isRecording) {
+          this._saveOnStop = true;
+          this.stopClip();
+          return;
+        }
+        this._saveLastClip();
+      }
+
+      // ================= Screenshot: чистый кадр без скрипта, сохраняется в Safe Clip =================
+      static SHOT_MAX = 20;
+
+      takeScreenshot() {
+        if (!this.main.is_game_running()) {
+          this._notify("Start the game first.", "info", "Screenshot");
+          return;
+        }
+        if (this._shotPending) return;
+        if (document.hidden) {
+          this._notify("The tab is in the background - the game isn't drawing frames.", "error", "Screenshot");
+          return;
+        }
+        if (!this._hooksInstalled) {
+          try { this._installCleanCaptureHooks(); } catch (e) { this._fail("hook install", e); }
+        }
+        this._shotPending = true;
+        this._shotTries = 0;
+        this._armShotTimer();
+      }
+
+      // Если кадр не пришёл за 1,5 с: один раз переустанавливаем хуки, потом сообщаем об ошибке.
+      // Видимый холст НЕ снимаем: в нём были бы оверлеи скрипта.
+      _armShotTimer() {
+        clearTimeout(this._shotTimer);
+        this._shotTimer = setTimeout(() => {
+          if (!this._shotPending) return;
+          if (this._shotTries++ < 1) {
+            try { this._reinstallHooks(); } catch (e) { this._fail("hook reinstall", e); }
+            this._armShotTimer();
+            return;
+          }
+          this._shotPending = false;
+          this._ctxLog("error", "Screenshot failed: no clean frame", this._hookDiag());
+          this._notify("Couldn't get a clean frame (" + (this._lastError || "game draw hooks did not fire") + ").", "error", "Screenshot");
+        }, 1500);
+      }
+
+      // Вызывается из draw_scene / draw_UI сразу после чистого прохода, пока на холсте игры чистая картинка
+      _captureShot(gameCanvas) {
+        if (!this._shotPending) return;
+        this._shotPending = false;
+        clearTimeout(this._shotTimer);
+        this._shotTimer = 0;
+        try {
+          const w = gameCanvas.width, h = gameCanvas.height;
+          if (!this._shotCanvas) this._shotCanvas = document.createElement("canvas");
+          const c = this._shotCanvas;
+          c.width = w;
+          c.height = h;
+          const cx = c.getContext("2d", { alpha: false });
+          cx.drawImage(gameCanvas, 0, 0);
+          let thumb = "";
+          try {
+            const tw = 160, th = Math.max(1, Math.round(tw * h / w));
+            const t = document.createElement("canvas");
+            t.width = tw;
+            t.height = th;
+            t.getContext("2d").drawImage(c, 0, 0, tw, th);
+            thumb = t.toDataURL("image/jpeg", 0.6);
+          } catch (_) {}
+          // PNG кодируется уже вне кадра игры
+          c.toBlob(blob => {
+            if (!blob) {
+              this._notify("Couldn't encode the screenshot (the game canvas may be cross-origin).", "error", "Screenshot");
+              return;
+            }
+            this._saveShot(blob, thumb, w, h);
+          }, "image/png");
+        } catch (e) {
+          this._fail("screenshot capture", e);
+          this._notify("Capture failed (" + (this._lastError || "unknown") + ").", "error", "Screenshot");
+        }
+      }
+
+      async _saveShot(blob, thumb, w, h) {
+        try {
+          const entry = await this._addToHistory({ kind: "shot", ext: "png", mime: "image/png", dur: 0, thumb: thumb, blob: blob, w: w, h: h });
+          if (this._setting("clipShotDownload", true) !== false && entry) this._downloadEntry(entry);
+        } catch (e) {
+          this._fail("screenshot save", e);
+          this._notify("Couldn't save the screenshot (" + (this._lastError || "unknown") + ").", "error", "Screenshot");
+        }
+      }
+
+      _updateSafeUI() {
+        const saveBtn = document.querySelector('.azon-gui-button[data-key="clipSaveBtn"]');
+        if (!saveBtn) return;
+        const c = this._lastClip;
+        const ready = !this.isRecording && !!c && !c.saved;
+        saveBtn.textContent = this.isRecording ? "● Stop & Save Clip"
+          : ready ? "Save Clip (Ready)"
+          : c && c.saved ? "Clip Saved" : "Save Clip";
+        saveBtn.style.setProperty("background", this.isRecording ? "rgba(239, 68, 68, 0.25)" : "rgba(255, 255, 255, 0.05)", "important");
+        saveBtn.style.setProperty("border-color", this.isRecording ? "#ef4444" : ready ? "#22c55e" : "rgba(255, 255, 255, 0.05)", "important");
+      }
+
+      // Клип готов (запись остановлена): запоминаем его и либо сохраняем, либо спрашиваем что делать
+      _onClipReady(blob, mime) {
+        this._lastClip = {
+          blob: blob,
+          mime: mime,
+          ext: this._lastBlobExt,
+          dur: this._recStartedWall ? Math.max(0, Math.round(performance.now() - this._recStartedWall - this._pausedTotal)) : 0,
+          thumb: this._makeThumb(),
+          saved: false
+        };
+        this._updateSafeUI();
+        if (this._saveOnStop) {
+          this._saveLastClip();
+        } else if (!this._suppressChoice) {
+          this._showChoice();
+        }
+      }
+
+      async _saveLastClip() {
+        const c = this._lastClip;
+        if (!c) {
+          this._notify("Nothing to save - record a clip first.", "info");
+          return;
+        }
+        if (c.saved) {
+          this._notify("This clip is already saved.", "info");
+          return;
+        }
+        c.saved = true;
+        try {
+          await this._addToHistory(c);
+        } catch (e) {
+          c.saved = false;
+          this._updateSafeUI();
+          this._fail("history save", e);
+          this._notify("Couldn't save the clip (" + (this._lastError || "unknown") + ").", "error");
+        }
+      }
+
+      // Выбор после остановки записи: скачать файл или сохранить в список
+      _showChoice() {
+        this._hideChoice();
+        const c = this._lastClip;
+        if (!c) return;
+        const el = document.createElement("div");
+        el.id = "arct-clip-choice";
+        el.style.cssText = "position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:2147483600;display:flex;"
+          + "align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(11,14,20,.96);color:#f8fafc;"
+          + "border:1px solid rgba(59,130,246,.5);box-shadow:0 12px 30px rgba(0,0,0,.65);font:600 13px/1.4 sans-serif;";
+        const label = document.createElement("span");
+        label.textContent = "Clip ready (" + this._fmtDur(c.dur) + ", " + this._fmtSize(c.blob.size) + ")";
+        const mkBtn = (text, bg, fn) => {
+          const b = document.createElement("button");
+          b.textContent = text;
+          b.style.cssText = "cursor:pointer;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:5px 12px;font:inherit;background:" + bg + ";";
+          b.addEventListener("click", () => { fn(); this._hideChoice(); });
+          return b;
+        };
+        const close = document.createElement("button");
+        close.textContent = "\u2715";
+        close.title = "Dismiss (the clip stays available via Download Clip / Save Clip)";
+        close.style.cssText = "cursor:pointer;color:#94a3b8;background:none;border:none;font:inherit;padding:2px 4px;";
+        close.addEventListener("click", () => this._hideChoice());
+        el.append(label, mkBtn("Download", "rgba(59,130,246,.6)", () => this._triggerDownload()),
+          mkBtn("Save", "rgba(34,197,94,.6)", () => this._saveLastClip()), close);
+        // клики по окошку не должны уходить в игру
+        for (const ev of ["mousedown", "mouseup", "click", "wheel", "touchstart", "contextmenu"]) {
+          el.addEventListener(ev, e => e.stopPropagation());
+        }
+        (document.body || document.documentElement).appendChild(el);
+        this._choiceTimer = setTimeout(() => this._hideChoice(), 45000);
+      }
+
+      _hideChoice() {
+        clearTimeout(this._choiceTimer);
+        this._choiceTimer = 0;
+        document.getElementById("arct-clip-choice")?.remove();
+      }
+
+      // ---------- хранилище (IndexedDB) ----------
+      _dbOpen() {
+        if (this._dbP) return this._dbP;
+        this._dbP = new Promise((resolve, reject) => {
+          try {
+            const r = indexedDB.open("arct_clip_history", 1);
+            r.onupgradeneeded = () => { r.result.createObjectStore("clips", { keyPath: "id" }); };
+            r.onsuccess = () => resolve(r.result);
+            r.onerror = () => reject(r.error);
+            r.onblocked = () => reject(new Error("indexedDB blocked"));
+          } catch (e) { reject(e); }
+        });
+        return this._dbP;
+      }
+
+      async _dbTx(mode, fn) {
+        const db = await this._dbOpen();
+        return new Promise((resolve, reject) => {
+          let req;
+          try {
+            const tx = db.transaction("clips", mode);
+            req = fn(tx.objectStore("clips"));
+            tx.oncomplete = () => resolve(req && "result" in req ? req.result : undefined);
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error || new Error("transaction aborted"));
+          } catch (e) { reject(e); }
+        });
+      }
+
+      _loadHistory() {
+        if (this._historyP) return this._historyP;
+        this._historyP = (async () => {
+          let rows = [];
+          try {
+            rows = (await this._dbTx("readonly", s => s.getAll())) || [];
+          } catch (e) {
+            this._warn("history load failed", e);
+          }
+          // клипы, добавленные в память до конца загрузки, не теряем
+          const known = new Set(this._history.map(h => h.id));
+          for (const r of rows) if (r && r.blob && !known.has(r.id)) this._history.push(r);
+          this._history.sort((a, b) => b.ts - a.ts);
+          this._trimHistory();
+          this._updateSafeUI();
+        })();
+        return this._historyP;
+      }
+
+      _dropEntry(h) {
+        try { if (h.url) URL.revokeObjectURL(h.url); } catch (_) {}
+        h.url = null;
+        this._dbTx("readwrite", s => s.delete(h.id)).catch(e => this._warn("history delete failed", e));
+      }
+
+      // Клипы и скриншоты делят один список, но лимиты у них свои: скриншоты не вытесняют клипы
+      _trimHistory() {
+        const lim = { clip: Feature_ClipRecorder.HISTORY_MAX, shot: Feature_ClipRecorder.SHOT_MAX };
+        const cnt = { clip: 0, shot: 0 };
+        for (let i = 0; i < this._history.length;) {
+          const h = this._history[i];
+          const k = h.kind === "shot" ? "shot" : "clip";
+          if (++cnt[k] > lim[k]) {
+            if (this._playingId === h.id) this._stopPlayer();
+            this._history.splice(i, 1);
+            this._dropEntry(h);
+          } else {
+            i++;
+          }
+        }
+      }
+
+      // Миниатюра берётся из последнего кадра клипа; если холст "загрязнён" - без неё
+      _makeThumb() {
+        try {
+          const c = this._cleanCanvas;
+          if (!c || c.width <= 2) return "";
+          const w = 160, h = Math.max(1, Math.round(w * c.height / c.width));
+          const t = document.createElement("canvas");
+          t.width = w;
+          t.height = h;
+          t.getContext("2d").drawImage(c, 0, 0, w, h);
+          return t.toDataURL("image/jpeg", 0.6);
+        } catch (_) {
+          return "";
+        }
+      }
+
+      async _addToHistory(c) {
+        const isShot = c.kind === "shot";
+        const entry = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+          ts: Date.now(),
+          kind: isShot ? "shot" : "clip",
+          ext: c.ext,
+          mime: c.mime,
+          dur: c.dur,
+          size: c.blob.size,
+          thumb: c.thumb,
+          blob: c.blob
+        };
+        if (isShot) { entry.w = c.w; entry.h = c.h; }
+        await this._loadHistory();
+        this._history.unshift(entry);
+        this._trimHistory();
+        let stored = true;
+        try {
+          await this._dbTx("readwrite", s => s.put(entry));
+        } catch (e) {
+          stored = false;
+          this._warn("history save failed", e);
+        }
+        this._updateSafeUI();
+        this._renderHistory();
+        const kindCount = this._history.filter(h => (h.kind === "shot") === isShot).length;
+        this._notify((isShot ? "Screenshot saved (" : "Clip saved (") + kindCount + "/"
+          + (isShot ? Feature_ClipRecorder.SHOT_MAX : Feature_ClipRecorder.HISTORY_MAX) + ")"
+          + (stored ? "" : " - kept in memory only"), "info", isShot ? "Screenshot" : "Clip");
+        return entry;
+      }
+
+      // ---------- список сохранённых клипов внутри панели "Safe Clip" ----------
+      _fmtDur(ms) {
+        const s = Math.round((ms || 0) / 1000);
+        return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      }
+
+      _fmtSize(b) {
+        return b >= 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB";
+      }
+
+      _fmtDate(ts) {
+        const d = new Date(ts), p = n => String(n).padStart(2, "0");
+        return p(d.getDate()) + "." + p(d.getMonth() + 1) + "  " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+      }
+
+      _ensureSavedStyle() {
+        if (document.getElementById("arct-clip-saved-style")) return;
+        const st = document.createElement("style");
+        st.id = "arct-clip-saved-style";
+        st.textContent = `
+          .arct-clip-saved { width: 100%; box-sizing: border-box; padding: 4px 0 2px; color: #f8fafc; font: 13px/1.4 sans-serif; }
+          .arct-clip-saved .ach-head { display: flex; justify-content: space-between; color: #94a3b8; font-weight: 600; padding: 0 2px 6px; }
+          .arct-clip-saved button { cursor: pointer; color: #f8fafc; background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 4px 9px; font: inherit; }
+          .arct-clip-saved button:hover { background: rgba(59, 130, 246, 0.35); }
+          .arct-clip-saved button.ach-armed { background: rgba(239, 68, 68, 0.55); border-color: #ef4444; }
+          .arct-clip-saved .ach-player { width: 100%; max-height: 260px; background: #000; border-radius: 6px; margin-bottom: 6px; display: none; }
+          .arct-clip-saved .ach-player.show { display: block; }
+          .arct-clip-saved .ach-image { width: 100%; max-height: 260px; object-fit: contain; background: #000; border-radius: 6px; margin-bottom: 6px; display: none; cursor: pointer; }
+          .arct-clip-saved .ach-image.show { display: block; }
+          .arct-clip-saved .ach-list { display: flex; flex-direction: column; gap: 6px; }
+          .arct-clip-saved .ach-row { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; }
+          .arct-clip-saved .ach-row.active { border-color: #3b82f6; background: rgba(59, 130, 246, 0.14); }
+          .arct-clip-saved .ach-thumb { width: 80px; height: 45px; object-fit: cover; border-radius: 4px; background: #1e293b; flex: none; cursor: pointer; }
+          .arct-clip-saved .ach-info { flex: 1; min-width: 0; }
+          .arct-clip-saved .ach-name { font-weight: 700; }
+          .arct-clip-saved .ach-meta { color: #94a3b8; font-size: 12px; }
+          .arct-clip-saved .ach-btns { display: flex; gap: 4px; flex: none; }
+          .arct-clip-saved .ach-empty { padding: 14px 6px; color: #94a3b8; text-align: center; }
+        `;
+        (document.head || document.documentElement).appendChild(st);
+      }
+
+      // GUI мода перерисовывает вкладки целиком, поэтому раз в ~0,7 с проверяем, что наш список на месте в панели "Safe Clip"
+      _mountSavedList() {
+        if (this._histEl && !this._histEl.isConnected) {
+          this._histEl = null;
+          this._playingId = null;
+        }
+        if (this._histEl) return;
+        let panel = null;
+        for (const h of document.querySelectorAll(".azon-gui-panel[data-panel-key] .azon-gui-panel-header .arct-row-title")) {
+          if (h.textContent.trim() === "Safe Clip") { panel = h.closest(".azon-gui-panel"); break; }
+        }
+        const content = panel && panel.querySelector(".azon-gui-panel-content");
+        if (!content) return;
+        this._prewarmEncoder();   // меню клипа открыто: заморозка от первого запуска кодировщика пройдёт здесь, а не на Start Clip
+        this._ensureSavedStyle();
+        const box = document.createElement("div");
+        box.className = "arct-clip-saved";
+        box.innerHTML = '<div class="ach-head"><span>Saved clips and screenshots</span><span class="ach-count"></span></div>'
+          + '<video class="ach-player" controls playsinline></video><img class="ach-image" alt="" title="Click to close"><div class="ach-list"></div>';
+        box.querySelector(".ach-image").addEventListener("click", () => { this._stopPlayer(); this._renderHistory(); });
+        content.appendChild(box);
+        this._histEl = box;
+        this._renderHistory();
+        // GUI перерисован заново: возвращаем подписи кнопок клипа
+        this._updateButtonsUI();
+        this._loadHistory().then(() => this._renderHistory()).catch(e => this._warn("history load failed", e));
+      }
+
+      _stopPlayer() {
+        const v = this._histEl && this._histEl.querySelector(".ach-player");
+        if (v) {
+          try { v.pause(); v.removeAttribute("src"); v.load(); } catch (_) {}
+          v.classList.remove("show");
+        }
+        const im = this._histEl && this._histEl.querySelector(".ach-image");
+        if (im) {
+          im.removeAttribute("src");
+          im.classList.remove("show");
+        }
+        this._playingId = null;
+      }
+
+      _playEntry(h) {
+        const root = this._histEl;
+        if (!root) return;
+        if (!h.url) h.url = URL.createObjectURL(h.blob);
+        if (h.kind === "shot") {
+          // скриншот: показываем картинку вместо видео-плеера
+          this._stopPlayer();
+          const im = root.querySelector(".ach-image");
+          im.src = h.url;
+          im.classList.add("show");
+          this._playingId = h.id;
+          this._renderHistory();
+          return;
+        }
+        const im0 = root.querySelector(".ach-image");
+        if (im0) {
+          im0.removeAttribute("src");
+          im0.classList.remove("show");
+        }
+        const v = root.querySelector(".ach-player");
+        v.src = h.url;
+        v.classList.add("show");
+        v.play().catch(() => {});
+        this._playingId = h.id;
+        this._renderHistory();
+      }
+
+      _downloadEntry(h) {
+        const url = h.url || (h.url = URL.createObjectURL(h.blob));
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        const stamp = new Date(h.ts).toISOString().replace(/[:.]/g, "-").slice(0, 19);
+        a.download = (h.kind === "shot" ? "starve_screenshot_" : "starve_clip_") + stamp + "." + (h.ext || (h.kind === "shot" ? "png" : "webm"));
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => a.remove(), 100);
+      }
+
+      _deleteEntry(h) {
+        const i = this._history.indexOf(h);
+        if (i < 0) return;
+        if (this._playingId === h.id) this._stopPlayer();
+        this._history.splice(i, 1);
+        this._dropEntry(h);
+        this._renderHistory();
+      }
+
+      _renderHistory() {
+        const root = this._histEl;
+        if (!root) return;
+        const nShots = this._history.filter(h => h.kind === "shot").length;
+        root.querySelector(".ach-count").textContent = "clips " + (this._history.length - nShots) + "/" + Feature_ClipRecorder.HISTORY_MAX
+          + "  \u00B7  shots " + nShots + "/" + Feature_ClipRecorder.SHOT_MAX;
+        const list = root.querySelector(".ach-list");
+        list.textContent = "";
+        if (!this._history.length) {
+          const empty = document.createElement("div");
+          empty.className = "ach-empty";
+          empty.textContent = "Nothing saved yet. Record a clip and press Save Clip (or choose Save after Stop), or take a screenshot.";
+          list.appendChild(empty);
+          return;
+        }
+        const mk = (tag, cls, text) => {
+          const el = document.createElement(tag);
+          if (cls) el.className = cls;
+          if (text !== undefined) el.textContent = text;
+          return el;
+        };
+        for (const h of this._history) {
+          const row = mk("div", "ach-row" + (h.id === this._playingId ? " active" : ""));
+          let thumb;
+          if (h.thumb) {
+            thumb = mk("img", "ach-thumb");
+            thumb.src = h.thumb;
+            thumb.alt = "";
+          } else {
+            thumb = mk("div", "ach-thumb");
+          }
+          thumb.addEventListener("click", () => this._playEntry(h));
+          const info = mk("div", "ach-info");
+          const isShot = h.kind === "shot";
+          info.appendChild(mk("div", "ach-name", this._fmtDate(h.ts)));
+          info.appendChild(mk("div", "ach-meta", isShot
+            ? "Screenshot  \u00B7  " + (h.w && h.h ? h.w + "\u00D7" + h.h + "  \u00B7  " : "") + this._fmtSize(h.size) + "  \u00B7  " + (h.ext || "png")
+            : this._fmtDur(h.dur) + "  \u00B7  " + this._fmtSize(h.size) + "  \u00B7  " + (h.ext || "webm")));
+          const btns = mk("div", "ach-btns");
+          const play = mk("button", "", isShot ? "\u25A3" : "\u25B6");
+          play.title = isShot ? "View" : "Play";
+          play.addEventListener("click", () => this._playEntry(h));
+          const dl = mk("button", "", "\u2B07");
+          dl.title = "Download";
+          dl.addEventListener("click", () => this._downloadEntry(h));
+          const del = mk("button", "", "\u2715");
+          del.title = "Delete";
+          let armTimer = 0;
+          del.addEventListener("click", () => {
+            // второй клик в течение 3 с подтверждает удаление
+            if (!del.classList.contains("ach-armed")) {
+              del.classList.add("ach-armed");
+              del.textContent = "Sure?";
+              armTimer = setTimeout(() => { del.classList.remove("ach-armed"); del.textContent = "\u2715"; }, 3000);
+              return;
+            }
+            clearTimeout(armTimer);
+            this._deleteEntry(h);
+          });
+          if (isShot) {
+            const cp = mk("button", "", "\u29C9");
+            cp.title = "Copy image to clipboard";
+            cp.addEventListener("click", async () => {
+              try {
+                await navigator.clipboard.write([new ClipboardItem({ "image/png": h.blob })]);
+                this._notify("Copied to clipboard.", "info", "Screenshot");
+              } catch (e) {
+                this._notify("Couldn't copy (the browser blocked clipboard access).", "error", "Screenshot");
+              }
+            });
+            btns.append(play, cp, dl, del);
+          } else {
+            btns.append(play, dl, del);
+          }
+          row.append(thumb, info, btns);
+          list.appendChild(row);
+        }
+      }
+
       downloadClip() {
         if (this.isRecording && this._mediaRecorder) {
+          this._suppressChoice = true;
           const origOnStop = this._mediaRecorder.onstop;
           this._mediaRecorder.onstop = (...args) => {
             if (origOnStop) origOnStop.apply(this._mediaRecorder, args);
@@ -12060,1592 +13727,6 @@ function escapeHtml(str) {
   }
 }
 
-class Feature_Defense extends CheatFeatureBase {
-      static id = "defense";
-      static settingsKey = "defenseDetectRaids";
-      static category = Ye;
-      static enabled = false;
-
-      // Рейд = серия ударов: минимум RAID_MIN_HITS ударов, пауза между соседними ударами не больше RAID_HIT_GAP_MS
-      static RAID_MIN_HITS = 2;
-      static RAID_HIT_GAP_MS = 10000;
-      // Первое оповещение приходит сразу, следующие — не чаще, чем раз в ALERT_COOLDOWN_MS
-      static ALERT_COOLDOWN_MS = 60000;
-      // Постройка пропала, а мы её не видели дольше этого времени -> «пропала, пока тебя не было»
-      static LATE_REMOVAL_MS = 15000;
-      // Постройки ближе этого расстояния считаются одной базой
-      static CLUSTER_LINK = 600;
-      static SAVE_INTERVAL_MS = 5000;
-      static SAVE_TTL_MS = 12 * 60 * 60 * 1000;
-      static THREAT_LABELS = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
-      static THREAT_COLORS = ["#FACC15", "#F97316", "#EF4444", "#B91C1C"];
-      // Удары без чужого игрока рядом (моб / неизвестный источник) - только как «урон», и только от этого числа ударов
-      static RAID_MIN_HITS_NO_PLAYER = 4;
-      // Чужой игрок ближе этого расстояния к ударенной постройке (и замечен не раньше HIT_ATTRIBUTION_FRESH_MS назад) = источник удара
-      static HIT_ATTRIBUTION_RADIUS = 260;
-      static HIT_ATTRIBUTION_FRESH_MS = 2500;
-      static MOB_ATTRIBUTION_RADIUS = 320;
-      // Атакующий остаётся в отчёте, пока бил или был виден за последние ATTACKER_KEEP_MS
-      static ATTACKER_KEEP_MS = 8000;
-      // Эскалация (рост угрозы / новый атакующий) пробивает кулдаун, но не чаще чем раз в ESCALATE_MIN_GAP_MS
-      static ESCALATE_MIN_GAP_MS = 5000;
-      // Раннее предупреждение (Warn On Raid Tools): враг с рейдовым молотком (тир 2+) у базы дольше EARLY_DWELL_MS
-      static EARLY_RADIUS = 350;
-      static EARLY_DWELL_MS = 3000;
-      static EARLY_COOLDOWN_MS = 120000;
-
-      constructor(t) {
-        super(t);
-        this._lastAlertTime = 0;
-        this._activeAlertText = "";
-        this._activeAlertUntil = 0;
-        this._allyBuildings = [];
-        this._hostileBuildings = [];
-        this._clusters = [];
-        this._clustersAt = 0;
-        this._minimapObj = null;
-        this._buildingTypes = null;
-        this._buildingTypeSet = null;
-
-        this._raid = { attackers: [], damaged: [], until: 0, threat: 0, focus: null };
-
-        // Память: сервер присылает только юнитов рядом с игроком, поэтому всё увиденное запоминаем
-        this._memWorld = null;
-        this._memServer = null;
-        this._bMem = new Map();        // key -> {type,x,y,pid,info,u,seen,forceAlly}
-        this._pMem = new Map();        // pid -> {x,y,pid,right,seen,ally,nick}
-        this._memDirty = false;
-        this._lastSave = 0;
-        this._pendingRestore = null;   // сохранённая база; применяется, когда увидим свою постройку
-
-        this._destroyedThisScan = 0;
-        this._destroyedList = [];
-        this._pendingDestroyed = [];
-        this._lastDestroyAlert = 0;
-
-        this._hitState = new Map();
-        this._hitKeys = new Map();     // тип постройки -> имя свойства с анимацией удара (находим по структуре)
-        this._presence = new Map();    // pid -> {ax,ay,at,lastTick}: враг с молотком стоит у нашей постройки
-        this._loggedPresence = false;
-        this._chain = this._newChain();
-        this._raidState = this._newRaidState();   // состояние текущего рейда: что уже оповещали, пик угрозы, итоги
-        this._toolMem = new Map();                // pid -> {right, at}: последнее известное оружие (игроки из чужого вида)
-        this._earlySince = new Map();             // pid -> когда впервые заметили рейдовый инструмент у базы
-        this._earlyWarned = new Map();            // pid -> когда предупреждали в последний раз
-        this._webhookErrLogged = false;
-        this._baseLocked = false;      // после смерти база скрыта, пока не подтвердим свои постройки
-        this._audio = null;
-
-        this._toolNames = {
-          [Items.HAMMER]: "Stone Hammer",
-          [Items.HAMMER_GOLD]: "Gold Hammer",
-          [Items.HAMMER_DIAMOND]: "Diamond Hammer",
-          [Items.HAMMER_AMETHYST]: "Amethyst Hammer",
-          [Items.HAMMER_REIDITE]: "Reidite Hammer",
-          [Items.SUPER_HAMMER]: "Super Hammer",
-          [Items.HAMMER_EMERALD]: "Emerald Hammer",
-          [Items.HAMMER_COPPER]: "Copper Hammer",
-          [Items.HAMMER_IRON]: "Iron Hammer",
-          [Items.HAMMER_TOPAZ]: "Topaz Hammer",
-          [Items.HAMMER_SAPPHIRE]: "Sapphire Hammer",
-          [Items.HAMMER_JADE]: "Jade Hammer",
-          [Items.HAMMER_RUBY]: "Ruby Hammer",
-          [Items.HAMMER_COAL]: "Coal Hammer",
-          [Items.HAMMER_AQUAMARINE]: "Aquamarine Hammer",
-          [Items.SPANNER]: "Wrench"
-        };
-
-        // Уровень опасности инструмента (0..3). Разбивка по материалам — оценка, правится здесь.
-        this._toolTier = {
-          [Items.SPANNER]: 0,
-          [Items.HAMMER]: 1, [Items.HAMMER_COPPER]: 1, [Items.HAMMER_IRON]: 1,
-          [Items.HAMMER_COAL]: 1, [Items.HAMMER_GOLD]: 1,
-          [Items.HAMMER_DIAMOND]: 2, [Items.HAMMER_AMETHYST]: 2, [Items.HAMMER_EMERALD]: 2,
-          [Items.HAMMER_JADE]: 2, [Items.HAMMER_TOPAZ]: 2, [Items.HAMMER_SAPPHIRE]: 2,
-          [Items.HAMMER_RUBY]: 2, [Items.HAMMER_AQUAMARINE]: 2,
-          [Items.HAMMER_REIDITE]: 3, [Items.SUPER_HAMMER]: 3
-        };
-
-        this._buildingTypeNames = {
-          [T]: "Wood Spike", [I]: "Stone Spike", [z]: "Gold Spike",
-          [C]: "Diamond Spike", [D]: "Amethyst Spike", [M]: "Reidite Spike",
-          [L]: "Wood Door", [P]: "Stone Door", [B]: "Gold Door",
-          [N]: "Diamond Door", [W]: "Amethyst Door", [F]: "Reidite Door",
-          [H]: "Wood Spike Door", [K]: "Stone Spike Door", [U]: "Gold Spike Door",
-          [$]: "Diamond Spike Door", [j]: "Amethyst Spike Door", [G]: "Reidite Spike Door",
-          4: "Wood Wall", 7: "Stone Wall", 8: "Gold Wall",
-          9: "Diamond Wall", 19: "Amethyst Wall", 59: "Reidite Wall"
-        };
-      }
-
-      init() {
-        super.init();
-
-        const origDrawScene = this.main.game.draw_scene;
-        this.main.game.draw_scene = (...t) => {
-          origDrawScene.apply(this.main.game, t);
-          this.drawScene(this.main.ctx);
-        };
-
-        const origDrawUI = this.main.game.draw_UI;
-        this.main.game.draw_UI = (...t) => {
-          origDrawUI.apply(this.main.game, t);
-          this.drawUI(this.main.ctx);
-        };
-
-        CustomTimer.setInterval(() => this.scanBaseAndRaids(), 250);
-      }
-
-      // ───────────── Геометрия карты ─────────────
-
-      _getMapMarkers() {
-        return this.main.FeatureRegistry?.getInstance?.("mapMarkers") || null;
-      }
-
-      _getMinimapBox() {
-        const mk = this._getMapMarkers();
-        if (mk && typeof mk._getMinimapBox === "function") {
-          try { return mk._getMinimapBox(); } catch (e) {}
-        }
-
-        const game = this.main.game;
-        const n = this.main.user;
-
-        if (!this._minimapObj && game) {
-          const rawGame = Object.getPrototypeOf(game) || game;
-          for (const k of Object.keys(rawGame)) {
-            const obj = rawGame[k];
-            if (
-              obj &&
-              typeof obj === "object" &&
-              obj !== game.gauges &&
-              obj.translate &&
-              typeof obj.translate.x === "number" &&
-              typeof obj.translate.y === "number" &&
-              typeof obj.focus === "function"
-            ) {
-              this._minimapObj = obj;
-              break;
-            }
-          }
-        }
-
-        const hasInv = n?.inv?.can_select && n.inv.can_select.length > 0;
-        const offsetY = hasInv ? -120 : -50;
-
-        if (this._minimapObj?.translate && this._minimapObj.translate.x > 0) {
-          return { x: this._minimapObj.translate.x, y: this._minimapObj.translate.y + offsetY };
-        }
-        return {
-          x: window.innerWidth - 193 - 10,
-          y: window.innerHeight - 193 + offsetY
-        };
-      }
-
-      _getWorldSize() {
-        const mk = this._getMapMarkers();
-        if (mk && typeof mk._getWorldSize === "function") {
-          try {
-            const s = mk._getWorldSize();
-            if (s?.width > 0 && s?.height > 0) return s;
-          } catch (e) {}
-        }
-        const w = this.main.world;
-        if (w?.__NW__ && w?.__NH__) {
-          return { width: w.__NW__ * 100, height: w.__NH__ * 100 };
-        }
-        return { width: 20000, height: 20000 };
-      }
-
-      _isBigMapOpen() {
-        return window.__arctBigMap ? window.__arctBigMap.isOpen(this.main.user) : false;
-      }
-
-      _bigRect() {
-        return window.__arctBigMap.rect(this.main.ctx, this._minimapObj);
-      }
-
-      _project(x, y, surface, world) {
-        const mm = this._getMinimapBox();
-        const big = surface.big;
-        const br = big ? this._bigRect() : null;
-        const originX = big ? br.x : mm.x;
-        const originY = big ? br.y : mm.y;
-        const s = big ? br.s : 193;
-        return {
-          x: originX + Math.max(0, Math.min(1, x / world.width)) * s,
-          y: originY + Math.max(0, Math.min(1, y / world.height)) * s
-        };
-      }
-
-      // ───────────── Смерть / блокировка ─────────────
-
-      _isDead() {
-        const mk = this._getMapMarkers();
-        if (mk && typeof mk._isPlayerDead === "function") {
-          try { return !!mk._isPlayerDead(); } catch (e) {}
-        }
-        const u = this.main.user;
-        return u?.ghost?.enabled === true || u?.alive === false ||
-          (typeof u?.alert === "string" && u.alert.includes("DEAD"));
-      }
-
-      // Смерть: стираем всё, что знали о базе (и сохранённую копию), прячем отрисовку
-      _lockBase() {
-        this._baseLocked = true;
-        this._bMem = new Map();
-        this._pMem = new Map();
-        this._allyBuildings = [];
-        this._hostileBuildings = [];
-        this._clusters = [];
-        this._destroyedThisScan = 0;
-        this._destroyedList = [];
-        this._pendingDestroyed = [];
-        this._raid = { attackers: [], damaged: [], until: 0, threat: 0, focus: null };
-        this._hitState = new Map();
-        this._presence = new Map();
-        this._chain = this._newChain();
-        this._raidState = this._newRaidState();
-        this._earlySince = new Map();
-        this._earlyWarned = new Map();
-        this._lastAlertTime = 0;
-        this._activeAlertUntil = 0;
-        this._activeAlertText = "";
-        this._pendingRestore = null;
-        this._memDirty = false;
-        this._clearSaved();
-      }
-
-      // Разблокировка: среди ВИДИМЫХ сейчас построек есть наша (владелец — мы или наша команда)
-      _tryUnlockBase() {
-        const units = this.main.world?.units;
-        if (!units) return false;
-        for (const tId of this._getBuildingTypes()) {
-          const arr = units[tId];
-          if (!Array.isArray(arr)) continue;
-          for (let i = 0; i < arr.length; i++) {
-            const u = arr[i];
-            if (u && typeof u.x === "number" && isAlly(u.pid, this.main)) {
-              this._baseLocked = false;
-              return true;
-            }
-          }
-        }
-        return false;
-      }
-
-      // ───────────── Сохранение базы между перезагрузками ─────────────
-
-      _storageKey() {
-        let server = "default";
-        try { server = this._getMapMarkers()?._getServerKey?.() || "default"; } catch (e) {}
-        return "arct_defense_base:" + server;
-      }
-
-      _loadSaved() {
-        try {
-          const raw = localStorage.getItem(this._storageKey());
-          if (!raw) return null;
-          const d = JSON.parse(raw);
-          if (!d || !Array.isArray(d.b) || !(Date.now() - d.t < Feature_Defense.SAVE_TTL_MS)) return null;
-          return { t: d.t, b: d.b };
-        } catch (e) { return null; }
-      }
-
-      _saveMemory(now) {
-        if (!this._memDirty || now - this._lastSave < Feature_Defense.SAVE_INTERVAL_MS) return;
-        this._lastSave = now;
-        this._memDirty = false;
-        try {
-          const arr = [];
-          for (const rec of this._bMem.values()) {
-            arr.push([rec.type, Math.round(rec.x), Math.round(rec.y), rec.info | 0, this._recIsAlly(rec) ? 1 : 0]);
-            if (arr.length >= 4000) break;
-          }
-          localStorage.setItem(this._storageKey(), JSON.stringify({ t: now, b: arr }));
-        } catch (e) {}
-      }
-
-      _clearSaved() {
-        try { localStorage.removeItem(this._storageKey()); } catch (e) {}
-      }
-
-      _resetMemoryIfNeeded() {
-        const w = this.main.world;
-        let server = null;
-        try { server = this._getMapMarkers()?._getServerKey?.() ?? null; } catch (e) {}
-        if (this._memWorld !== w || this._memServer !== server) {
-          this._memWorld = w;
-          this._memServer = server;
-          this._bMem = new Map();
-          this._pMem = new Map();
-          this._hostileBuildings = [];
-          this._allyBuildings = [];
-          this._clusters = [];
-          this._hitState = new Map();
-          this._presence = new Map();
-          this._chain = { count: 0, last: 0, hits: new Map(), lastPos: null };
-          this._pendingRestore = this._loadSaved();
-        }
-      }
-
-      // ───────────── Сбор построек ─────────────
-
-      _getBuildingTypes() {
-        if (!this._buildingTypes) {
-          this._buildingTypes = [
-            ...ItemCategories.SPIKES,
-            ...ItemCategories.DOORS,
-            ...ItemCategories.DOOR_SPIKES,
-            ...ItemCategories.EXTRACTORS,
-            4, 7, 8, 9, 19, 59,
-            18, 41, 43, 44, 50
-          ];
-          this._buildingTypeSet = new Set(this._buildingTypes);
-        }
-        return this._buildingTypes;
-      }
-
-      _recIsAlly(rec) {
-        return !!rec.forceAlly || isAlly(rec.pid, this.main);
-      }
-
-      // «Глаза» союзников со скриптом: их позиция и юниты вокруг них (приходят через радар)
-      _getTeamViews() {
-        const views = [];
-        const mk = this._getMapMarkers();
-        if (!mk || typeof mk._getMergedScriptPlayers !== "function") return views;
-        const user = this.main.user;
-        const myId = user?.id;
-        let sp;
-        try { sp = mk._getMergedScriptPlayers(); } catch (e) { return views; }
-        for (const id in sp) {
-          const p = sp[id];
-          if (!p || p.dead || !(p.x > 0) || !(p.y > 0)) continue;
-          if ((myId != null && p.pid === myId) || (p.uid != null && p.uid === user?.uid)) continue;
-          views.push({ x: p.x, y: p.y, units: Array.isArray(p.units) ? p.units : [] });
-        }
-        return views;
-      }
-
-      // Похоже ли, что свою постройку убрали мы сами/союзник, а не враг
-      _isLikelyOwnDemolition(rec, allyPos, now) {
-        let close = false;
-        for (let i = 0; i < allyPos.length; i++) {
-          if (Math.abs(allyPos[i].x - rec.x) < 450 && Math.abs(allyPos[i].y - rec.y) < 450) { close = true; break; }
-        }
-        if (!close) return false;
-        if (now - this._chain.last <= Feature_Defense.RAID_HIT_GAP_MS) return false; // идёт серия ударов
-        for (const e of this._pMem.values()) {
-          if (!e.ally && now - e.seen < 5000 && Math.hypot(e.x - rec.x, e.y - rec.y) < 900) return false;
-        }
-        return true;
-      }
-
-      // Постройки: запоминаем увиденное, удаляем только когда ПОДЪЕХАЛИ и убедились, что их нет
-      _collectBuildings(views, now) {
-        this._resetMemoryIfNeeded();
-        const units = this.main.world?.units;
-        const types = this._getBuildingTypes();
-        const typeSet = this._buildingTypeSet;
-        const mem = this._bMem;
-        const seenKeys = new Set();
-        let liveAlly = false;
-
-        const upsert = (type, x, y, info, pid, u) => {
-          const key = type + ":" + Math.round(x) + ":" + Math.round(y);
-          seenKeys.add(key);
-          if (isAlly(pid, this.main)) liveAlly = true;
-          const rec = mem.get(key);
-          if (rec) { rec.info = info; rec.pid = pid; rec.u = u; rec.seen = now; rec.forceAlly = false; }
-          else { mem.set(key, { type, x, y, info, pid, u, seen: now, forceAlly: false }); this._memDirty = true; }
-        };
-
-        // 1. Что видим сами
-        if (units) {
-          for (const tId of types) {
-            const arr = units[tId];
-            if (!Array.isArray(arr)) continue;
-            for (let i = 0; i < arr.length; i++) {
-              const u = arr[i];
-              if (!u || typeof u.x !== "number" || typeof u.y !== "number") continue;
-              upsert(tId, u.x, u.y, u.info, u.pid, u);
-            }
-          }
-        }
-
-        // 2. Что видят союзники со скриптом
-        const eyes = [];
-        const allyPos = [];
-        const me = this.main.get_local_player();
-        if (me && me.x > 0 && me.y > 0) { eyes.push({ x: me.x, y: me.y }); allyPos.push({ x: me.x, y: me.y }); }
-        for (const v of views) {
-          allyPos.push({ x: v.x, y: v.y });
-          for (const e of v.units) {
-            if (!Array.isArray(e) || !typeSet.has(e[0])) continue;
-            upsert(e[0], e[1], e[2], e[3] || 0, e[4] || 0, null);
-          }
-          // список обрезается на 180 юнитах — по неполным данным ничего не удаляем
-          if (v.units.length > 0 && v.units.length < 180) eyes.push({ x: v.x, y: v.y });
-        }
-
-        // 3. Восстановление сохранённой базы — только после того, как увидели СВОЮ постройку
-        if (this._pendingRestore && liveAlly) {
-          const { t, b } = this._pendingRestore;
-          this._pendingRestore = null;
-          for (const e of b) {
-            if (!Array.isArray(e) || !typeSet.has(e[0])) continue;
-            const key = e[0] + ":" + Math.round(e[1]) + ":" + Math.round(e[2]);
-            if (mem.has(key)) continue;
-            mem.set(key, {
-              type: e[0], x: e[1], y: e[2], info: e[3] || 0,
-              pid: e[4] ? null : -1, u: null, seen: t, forceAlly: !!e[4]
-            });
-          }
-          this._memDirty = true;
-        }
-
-        // 4. Удаление: постройка в зоне гарантированной видимости, но её нет — значит снесена
-        const removed = [];
-        for (const [key, rec] of mem) {
-          if (seenKeys.has(key)) continue;
-          let observed = false;
-          for (let i = 0; i < eyes.length; i++) {
-            if (Math.abs(rec.x - eyes[i].x) < 800 && Math.abs(rec.y - eyes[i].y) < 450) { observed = true; break; }
-          }
-          if (!observed) { rec.u = null; continue; }
-
-          mem.delete(key);
-          this._memDirty = true;
-          if (this._recIsAlly(rec) && this._buildingTypeNames[rec.type]) {
-            const age = now - rec.seen;
-            // своё же разбирание (рядом только мы/союзники, врагов нет) в тревоги не берём
-            if (age <= Feature_Defense.LATE_REMOVAL_MS && this._isLikelyOwnDemolition(rec, allyPos, now)) continue;
-            removed.push({ type: rec.type, x: rec.x, y: rec.y, age });
-          }
-        }
-        this._destroyedList = removed;
-        this._destroyedThisScan = removed.filter(d => d.age <= Feature_Defense.LATE_REMOVAL_MS).length;
-
-        // 5. Списки своих/чужих
-        const ally = [];
-        const hostile = [];
-        for (const rec of mem.values()) {
-          const isDoor = ItemCategories.DOORS.includes(rec.type) || ItemCategories.DOOR_SPIKES.includes(rec.type);
-          const item = { u: rec.u, type: rec.type, x: rec.x, y: rec.y, open: isDoor && !!(rec.info & 1) };
-          (this._recIsAlly(rec) ? ally : hostile).push(item);
-        }
-        this._allyBuildings = ally;
-        this._hostileBuildings = hostile;
-
-        // 6. Базы (кластеры) — пересчитываем раз в секунду
-        if (now - this._clustersAt >= 1000) {
-          this._clustersAt = now;
-          this._clusters = this._computeClusters(ally);
-        }
-        return { ally, hostile };
-      }
-
-      // Разбиваем свои постройки на отдельные базы (союз ближайших построек)
-      _computeClusters(ally) {
-        const n = ally.length;
-        if (n === 0) return [];
-        const link = Feature_Defense.CLUSTER_LINK;
-        const parent = new Int32Array(n);
-        for (let i = 0; i < n; i++) parent[i] = i;
-        const find = (a) => { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
-
-        const grid = new Map();
-        for (let i = 0; i < n; i++) {
-          const cx = Math.floor(ally[i].x / link), cy = Math.floor(ally[i].y / link);
-          for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
-              const list = grid.get((cx + dx) * 100000 + (cy + dy));
-              if (!list) continue;
-              for (let k = 0; k < list.length; k++) {
-                const j = list[k];
-                if (Math.hypot(ally[i].x - ally[j].x, ally[i].y - ally[j].y) <= link) {
-                  const a = find(i), b = find(j);
-                  if (a !== b) parent[a] = b;
-                }
-              }
-            }
-          }
-          const key = cx * 100000 + cy;
-          const own = grid.get(key);
-          if (own) own.push(i); else grid.set(key, [i]);
-        }
-
-        const byRoot = new Map();
-        for (let i = 0; i < n; i++) {
-          const r = find(i);
-          let c = byRoot.get(r);
-          if (!c) { c = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity, count: 0 }; byRoot.set(r, c); }
-          const b = ally[i];
-          if (b.x < c.minX) c.minX = b.x;
-          if (b.y < c.minY) c.minY = b.y;
-          if (b.x > c.maxX) c.maxX = b.x;
-          if (b.y > c.maxY) c.maxY = b.y;
-          c.count++;
-        }
-        return Array.from(byRoot.values()).map(c => ({
-          minX: c.minX - 150, minY: c.minY - 150, maxX: c.maxX + 150, maxY: c.maxY + 150, count: c.count
-        }));
-      }
-
-      // Расстояние от точки до ближайшей своей базы (0 — если внутри)
-      _distToBase(x, y) {
-        let best = Infinity;
-        for (let i = 0; i < this._clusters.length; i++) {
-          const b = this._clusters[i];
-          const dx = Math.max(b.minX - x, 0, x - b.maxX);
-          const dy = Math.max(b.minY - y, 0, y - b.maxY);
-          const d = Math.hypot(dx, dy);
-          if (d < best) best = d;
-        }
-        return best;
-      }
-
-      _playerNick(pid) {
-        const pInfo = this.main.world?.players?.[pid];
-        if (!pInfo) return "Enemy";
-        const first = Object.values(pInfo)[0];
-        return (typeof first === "string" ? first : pInfo.nickname) || "Enemy";
-      }
-
-      // У сундуков свойство называется hit, а у стен/шипов/дверей оно может быть обфусцировано
-      // или создаваться лениво. Ищем по структуре: объект {update: boolean, anim: {update(): function}}.
-      _getHit(u, type) {
-        if (!u) return null;
-        if (u.hit && typeof u.hit === "object") return u.hit;
-
-        const cachedKey = this._hitKeys.get(type);
-        if (cachedKey) {
-          const h = u[cachedKey];
-          return h && typeof h === "object" ? h : null;
-        }
-
-        for (const k of Object.keys(u)) {
-          const v = u[k];
-          if (v && typeof v === "object" && typeof v.update === "boolean" && v.anim && typeof v.anim.update === "function") {
-            this._hitKeys.set(type, k);
-            0 && console.log("[Defense] hit-property found for building type", type, "key:", k);
-            return v;
-          }
-        }
-        return null;
-      }
-
-      // Запасной детектор: если анимацию удара прочитать нельзя, считаем «ударом» раз в секунду,
-      // пока враг с молотком стоит на месте вплотную к нашей постройке.
-      // Раньше он срабатывал ВСЕГДА и дублировал удары, которые уже видны по анимации (серия набиралась вдвое быстрее),
-      // теперь постройки с читаемой анимацией пропускаются. Возвращает список { b, cls } для _registerHit.
-      _presenceHits(near, buildings, now) {
-        const out = [];
-        const seen = new Set();
-
-        for (const e of near) {
-          if (!e.live || now - e.seen > 1000) continue;
-          if (e.right == null || !this._toolNames[e.right]) continue;
-          seen.add(e.pid);
-
-          let st = this._presence.get(e.pid);
-          if (!st || Math.hypot(e.x - st.ax, e.y - st.ay) > 150) {
-            this._presence.set(e.pid, { ax: e.x, ay: e.y, at: now, lastTick: 0 });
-            continue;
-          }
-          if (now - st.at < 1200 || now - st.lastTick < 1000) continue;
-
-          let best = null, bd = 220;
-          for (let i = 0; i < buildings.length; i++) {
-            const d = Math.hypot(buildings[i].x - e.x, buildings[i].y - e.y);
-            if (d < bd) { bd = d; best = buildings[i]; }
-          }
-          if (!best) continue;
-          if (this._getHit(best.u, best.type)) continue; // анимация читается - этот удар уже виден основным детектором
-
-          st.lastTick = now;
-          out.push({ b: best, cls: { src: "player", players: [e] }, destroyed: false });
-
-          if (!this._loggedPresence) {
-            this._loggedPresence = true;
-            0 && console.log("[Defense] hit-by-presence used (no readable hit animation on buildings). Tool:", this._toolNames[e.right]);
-          }
-        }
-
-        for (const pid of this._presence.keys()) {
-          if (!seen.has(pid)) this._presence.delete(pid);
-        }
-        return out;
-      }
-
-      // Игроки: запоминаем последнюю позицию (свои глаза + глаза союзников)
-      _updatePlayerMemory(now, views) {
-        const myId = this.main.user?.id;
-        const live = new Set();
-        const players = this.main.world?.units?.[A] ?? [];
-
-        for (let i = 0; i < players.length; i++) {
-          const p = players[i];
-          if (!p || typeof p.x !== "number" || typeof p.y !== "number") continue;
-          if (p.ghost) { this._pMem.delete(p.pid); continue; }
-          live.add(p.pid);
-          if (p.right != null) this._toolMem.set(p.pid, { right: p.right, at: now });
-          this._pMem.set(p.pid, {
-            x: p.x, y: p.y, pid: p.pid, right: p.right, seen: now,
-            ally: isAlly(p.pid, this.main), nick: this._playerNick(p.pid), live: true
-          });
-        }
-
-        for (const v of views) {
-          for (const e of v.units) {
-            if (!Array.isArray(e) || e[0] !== A) continue;
-            const pid = e[4];
-            if (pid == null || pid === myId || live.has(pid)) continue;
-            this._pMem.set(pid, {
-              x: e[1], y: e[2], pid, right: undefined, seen: now,
-              ally: isAlly(pid, this.main), nick: e[5] || this._playerNick(pid), live: false
-            });
-          }
-        }
-
-        for (const [pid, e] of this._pMem) {
-          if (now - e.seen > 60000) this._pMem.delete(pid);
-        }
-        for (const [pid, m] of this._toolMem) {
-          if (now - m.at > 300000) this._toolMem.delete(pid);
-        }
-      }
-
-      // ───────────── Детект рейда ─────────────
-
-      // Угроза 0..3. База - самый сильный инструмент среди бьющих; сверху: 3+ атакующих, темп ударов,
-      // число разных построек и снесённые постройки. Темп/разброс по постройкам учитываются только для рейдовых
-      // инструментов (тир 1+): ручками и мечом стены не рейдят.
-      _calcThreat(attackers, chain, now) {
-        let base = 0;
-        for (const a of attackers) base = Math.max(base, a.tier || 0);
-        let score = base;
-        if (attackers.length >= 3) score++;
-        if (base >= 1) {
-          const recent = chain.times.filter(t => now - t <= 10000).length;
-          if (recent >= 6) score++;
-          if (chain.hits.size >= 4) score++;
-        }
-        if (chain.destroyedAt.length >= 1) score++;
-        if (chain.destroyedAt.length >= 3) score++;
-        return Math.min(3, score);
-      }
-
-      scanBaseAndRaids() {
-        if (!this.main.is_game_running()) return;
-
-        // Смерть -> прячем базу, пока снова не увидим свои постройки (после входа в тотем)
-        if (this._isDead()) {
-          if (!this._baseLocked) this._lockBase();
-          return;
-        }
-        if (this._baseLocked && !this._tryUnlockBase()) return;
-
-        const sm = this.main.SettingsManager;
-        const detectRaids = sm?.get("defenseDetectRaids");
-        const showMap = sm?.get("defenseShowBaseMap");
-        const debugFill = sm?.get("defenseDebugBaseFill");
-
-        if (!detectRaids && !showMap && !debugFill) {
-          this._clusters = [];
-          this._hostileBuildings = [];
-          return;
-        }
-
-        const now = Date.now();
-        const views = this._getTeamViews();
-        this._resetMemoryIfNeeded();
-        this._updatePlayerMemory(now, views);
-        const { ally: buildings } = this._collectBuildings(views, now);
-        this._saveMemory(now);
-
-        const myId = this.main.user?.id;
-
-        // Игроки около баз — по памяти, поэтому работает и когда ты далеко
-        const near = [];
-        let alliesNearCount = 0;
-        if (this._clusters.length > 0) {
-          for (const e of this._pMem.values()) {
-            const age = now - e.seen;
-            if (age > 20000) continue;
-            if (this._distToBase(e.x, e.y) > 700) continue;
-            if (e.ally) {
-              if (age < 3000 && e.pid !== myId) alliesNearCount++;
-            } else {
-              near.push(e);
-            }
-          }
-        }
-
-        if (!detectRaids) return;
-
-        this._checkRaidEnd(now);
-        this._checkEarlyWarning(near, now);
-
-        // Сломанные/пропавшие постройки — сообщение сразу, пауза в минуту на него не действует
-        this._handleDestroyed(this._destroyedList, now);
-
-        if (buildings.length === 0) return;
-
-        // ── Удары по постройкам ──
-        // hit.update держится true на время анимации, поэтому считаем именно НОВЫЕ удары:
-        // начало анимации, перезапуск анимации (v уменьшилось) или смена угла удара.
-        // Каждый удар привязываем к источнику: чужой игрок рядом / моб / только свои (ремонт) / неизвестно.
-        const activeKeys = new Set();
-        const chain = this._chain;
-        const gap = Feature_Defense.RAID_HIT_GAP_MS;
-        const hitCtx = { mobs: null };
-        const pending = [];
-
-        for (let i = 0; i < buildings.length; i++) {
-          const b = buildings[i];
-          const h = this._getHit(b.u, b.type);
-          if (!h?.update) continue;
-
-          const key = b.type + ":" + Math.round(b.x) + ":" + Math.round(b.y);
-          activeKeys.add(key);
-
-          const v = typeof h.anim?.v === "number" ? h.anim.v : null;
-          const angle = typeof h.angle === "number" ? h.angle : null;
-          const prev = this._hitState.get(key);
-
-          const isNewHit =
-            !prev ||
-            (v !== null && prev.v !== null && v < prev.v - 0.05) ||
-            (angle !== null && prev.angle !== null && angle !== prev.angle);
-
-          this._hitState.set(key, { v, angle });
-
-          if (isNewHit) pending.push({ b, cls: this._classifyHit(b, now, hitCtx), destroyed: false });
-        }
-        for (const key of this._hitState.keys()) {
-          if (!activeKeys.has(key)) this._hitState.delete(key);
-        }
-
-        // Запасной детектор ударов (если у построек нет читаемой анимации удара)
-        for (const h of this._presenceHits(near, buildings, now)) pending.push(h);
-
-        // Снесённая на глазах постройка тоже считается ударом (пропавшие «пока не было» — нет)
-        for (const d of this._destroyedList) {
-          if (d.age > Feature_Defense.LATE_REMOVAL_MS) continue;
-          const b = { x: d.x, y: d.y, type: d.type };
-          pending.push({ b, cls: this._classifyHit(b, now, hitCtx), destroyed: true });
-        }
-
-        // ── Серия ударов ──
-        if (pending.length > 0 && (chain.count + chain.other) > 0 && now - chain.last > gap) {
-          Object.assign(chain, this._newChain());
-        }
-        for (const h of pending) this._registerHit(chain, h.b, h.cls, now, h.destroyed);
-
-        const total = chain.count + chain.other;
-        const chainAlive = total > 0 && now - chain.last <= gap;
-        if (!chainAlive && total > 0) Object.assign(chain, this._newChain());
-        if (!chainAlive) return;
-
-        // Рейд = серия ударов по нашим постройкам с чужим игроком рядом. Без игрока (моб / неизвестно) - только «урон»
-        const playerRaid = chain.count >= Feature_Defense.RAID_MIN_HITS;
-        const damageOnly = !playerRaid && total >= Feature_Defense.RAID_MIN_HITS_NO_PLAYER;
-        if (!playerRaid && !damageOnly) return;
-        const kind = playerRaid ? "raid" : "damage";
-
-        const freshEnemies = near.filter(e => now - e.seen < 3000);
-        const attackers = playerRaid ? this._buildAttackers(chain, now) : [];
-        const threat = playerRaid ? this._calcThreat(attackers, chain, now) : 0;
-        const hitList = Array.from(chain.hits.values());
-
-        // метки на карте живут, пока серия не оборвалась
-        this._raid = {
-          attackers,
-          damaged: hitList,
-          until: chain.last + gap,
-          threat,
-          focus: chain.lastPos
-        };
-
-        this._trackRaid(kind, chain, attackers, threat);
-        const reason = this._nextAlertReason(kind, attackers, threat, now);
-        if (!reason) return;
-
-        this.triggerAlert({
-          kind,
-          reason,
-          attackers,
-          alliesNearCount,
-          enemiesNearCount: freshEnemies.length,
-          damagedBuildings: hitList.map(h => `${this._buildingTypeNames[h.type] || `Building #${h.type}`} at (${Math.round(h.x / 100)}, ${Math.round(h.y / 100)})`),
-          totalBuildings: buildings.length,
-          destroyedCount: chain.destroyedAt.length,
-          threat
-        }, false);
-      }
-
-      // ───────────── Сломанные / пропавшие постройки ─────────────
-
-      // Очередь: первое сообщение сразу, всплеск склеиваем (не чаще раза в 2 с)
-      _handleDestroyed(list, now) {
-        if (list && list.length) this._pendingDestroyed.push(...list);
-        if (this._pendingDestroyed.length === 0) return;
-        if (now - this._lastDestroyAlert < 2000) return;
-        const batch = this._pendingDestroyed;
-        this._pendingDestroyed = [];
-        this._lastDestroyAlert = now;
-        this.triggerDestroyAlert(batch);
-      }
-
-      _fmtAge(ms) {
-        const s = Math.round(ms / 1000);
-        if (s < 60) return `${s}s`;
-        const m = Math.round(s / 60);
-        if (m < 60) return `${m}m`;
-        return `${Math.round(m / 60)}h`;
-      }
-
-      _destroyedText(batch) {
-        const LATE = Feature_Defense.LATE_REMOVAL_MS;
-        const live = batch.filter(d => d.age <= LATE);
-        const late = batch.filter(d => d.age > LATE);
-        const nameOf = (t) => this._buildingTypeNames[t] || `Building #${t}`;
-        const parts = [];
-
-        if (live.length > 0) {
-          const shown = live.slice(0, 5).map(d => `${nameOf(d.type)} at (${Math.round(d.x / 100)}, ${Math.round(d.y / 100)})`).join(", ");
-          parts.push(`BROKEN: ${shown}${live.length > 5 ? ` +${live.length - 5}` : ""}`);
-        }
-        if (late.length > 0) {
-          const counts = new Map();
-          let oldest = 0;
-          for (const d of late) {
-            counts.set(nameOf(d.type), (counts.get(nameOf(d.type)) || 0) + 1);
-            if (d.age > oldest) oldest = d.age;
-          }
-          const grouped = Array.from(counts.entries()).map(([n, c]) => c > 1 ? `${n} x${c}` : n).join(", ");
-          parts.push(`MISSING while away (~${this._fmtAge(oldest)}): ${grouped}`);
-        }
-        return parts.join(" | ");
-      }
-
-      triggerDestroyAlert(batch) {
-        const sm = this.main.SettingsManager;
-        const now = Date.now();
-        const text = this._destroyedText(batch);
-        if (!text) return;
-
-        if (sm?.get("defenseOnScreenAlert")) {
-          this._activeAlertText = text;
-          this._activeAlertUntil = now + 5000;
-        }
-
-        this._beep(1, 440);
-
-        if (sm?.get("defenseTellTeammates")) {
-          const markerFeat = this._getMapMarkers();
-          if (markerFeat?._radarWs && markerFeat._radarWs.readyState === WebSocket.OPEN) {
-            markerFeat._radarWs.send(JSON.stringify({ type: "squad_chat", text: `[DEFENSE] ${text}` }));
-          }
-        }
-
-        const webhookUrl = this._webhookUrl();
-        if (webhookUrl) {
-          this._postWebhook(webhookUrl, {
-            content: "",
-            embeds: [{
-              title: "Building Destroyed!",
-              color: 16753920,
-              fields: [{ name: "🧱 Destroyed", value: text.slice(0, 1000), inline: false }],
-              timestamp: new Date().toISOString(),
-              footer: { text: "ARCT Defense Heuristics" }
-            }]
-          });
-        }
-      }
-
-      // ───────────── Источник ударов, серия и состояние рейда ─────────────
-
-      _newChain() {
-        return {
-          count: 0,            // удары с чужим игроком рядом
-          other: 0,            // удары без игрока (моб / неизвестно)
-          first: 0, last: 0,
-          hits: new Map(),     // постройка -> {x,y,type,at,src}
-          lastPos: null,
-          times: [],           // время ударов (для темпа)
-          destroyedAt: [],     // время снесённых построек
-          attackers: new Map() // pid -> {pid,nick,hits,lastHit,lastSeen,minDist}
-        };
-      }
-
-      _newRaidState() {
-        return {
-          active: false, kind: "raid", startedAt: 0, lastHitAt: 0,
-          lastAlertAt: 0, alertedThreat: -1, alertedKind: null, alertedPids: new Set(),
-          peakThreat: 0, hits: 0, destroyed: 0,
-          buildings: new Map(), attackers: new Map()
-        };
-      }
-
-      // Оружие игрока: из текущего вида, иначе последнее известное (для игроков, которых видят только союзники)
-      _rightOf(e, now) {
-        if (e.right != null) return e.right;
-        const m = this._toolMem.get(e.pid);
-        return m && now - m.at < 120000 ? m.right : null;
-      }
-
-      // Кто бьёт постройку b? "player" - рядом чужой игрок; "mob" - рядом моб; "ally" - рядом только свои
-      // (ремонт и т.п. - не удар); "unknown" - рядом никого (огонь, лава, невидимый источник).
-      _classifyHit(b, now, ctx) {
-        const R = Feature_Defense.HIT_ATTRIBUTION_RADIUS;
-        const fresh = Feature_Defense.HIT_ATTRIBUTION_FRESH_MS;
-        const players = [];
-        let allyNear = false;
-        for (const e of this._pMem.values()) {
-          if (now - e.seen > fresh) continue;
-          if (Math.hypot(e.x - b.x, e.y - b.y) > R) continue;
-          if (e.ally) allyNear = true; else players.push(e);
-        }
-        if (players.length) return { src: "player", players };
-
-        if (!ctx.mobs) {
-          ctx.mobs = [];
-          const units = this.main.world?.units;
-          if (units) {
-            for (const type of ItemCategories.ANIMALS) {
-              const arr = units[type];
-              if (!Array.isArray(arr)) continue;
-              for (let i = 0; i < arr.length; i++) {
-                const m = arr[i];
-                if (m && typeof m.x === "number" && typeof m.y === "number") ctx.mobs.push(m);
-              }
-            }
-          }
-        }
-        const MR = Feature_Defense.MOB_ATTRIBUTION_RADIUS;
-        for (let i = 0; i < ctx.mobs.length; i++) {
-          if (Math.hypot(ctx.mobs[i].x - b.x, ctx.mobs[i].y - b.y) <= MR) return { src: "mob", players: [] };
-        }
-        return { src: allyNear ? "ally" : "unknown", players: [] };
-      }
-
-      // Записывает удар в серию. false - удар проигнорирован (рядом только свои)
-      _registerHit(chain, b, cls, now, destroyed = false) {
-        if (cls.src === "ally" && !destroyed) return false;
-
-        const key = b.type + ":" + Math.round(b.x) + ":" + Math.round(b.y);
-        if (!chain.first) chain.first = now;
-        chain.last = now;
-        chain.times.push(now);
-        if (chain.times.length > 200) chain.times.shift();
-        if (destroyed) chain.destroyedAt.push(now);
-
-        if (cls.src === "player") {
-          chain.count++;
-          for (const e of cls.players) {
-            let a = chain.attackers.get(e.pid);
-            if (!a) {
-              a = { pid: e.pid, nick: e.nick, hits: 0, lastHit: 0, lastSeen: 0, minDist: Infinity, x: e.x, y: e.y };
-              chain.attackers.set(e.pid, a);
-            }
-            a.hits++;
-            a.lastHit = now;
-            a.minDist = Math.min(a.minDist, Math.hypot(e.x - b.x, e.y - b.y));
-          }
-        } else {
-          chain.other++;
-        }
-
-        chain.hits.set(key, { x: b.x, y: b.y, type: b.type, at: now, src: cls.src });
-        chain.lastPos = { x: b.x, y: b.y };
-        return true;
-      }
-
-      // Атакующие = те, кто реально бил (а не все, кто стоял у базы). Главный - с наибольшим числом ударов.
-      _buildAttackers(chain, now) {
-        const keep = Feature_Defense.ATTACKER_KEEP_MS;
-        const list = [];
-        for (const a of chain.attackers.values()) {
-          const e = this._pMem.get(a.pid);
-          if (e) {
-            a.lastSeen = e.seen;
-            if (e.nick) a.nick = e.nick;
-            a.x = e.x;
-            a.y = e.y;
-          }
-          if (now - Math.max(a.lastHit, a.lastSeen || 0) > keep) continue;
-
-          const right = e ? this._rightOf(e, now) : (this._toolMem.get(a.pid)?.right ?? null);
-          const px = a.x ?? chain.lastPos?.x ?? 0;
-          const py = a.y ?? chain.lastPos?.y ?? 0;
-          list.push({
-            nick: a.nick || "Enemy",
-            pid: a.pid,
-            tool: right != null ? (this._toolNames[right] || "Weapon/Hands") : "Weapon/Hands",
-            tier: right != null ? (this._toolTier[right] || 0) : 0,
-            hits: a.hits,
-            minDist: a.minDist,
-            x: Math.round(px / 100),
-            y: Math.round(py / 100),
-            wx: px,
-            wy: py,
-            primary: false
-          });
-        }
-        list.sort((p, q) => q.hits - p.hits || p.minDist - q.minDist);
-        if (list.length) list[0].primary = true;
-        return list;
-      }
-
-      // Накапливаем итоги рейда (нужны для сообщения «рейд закончился»)
-      _trackRaid(kind, chain, attackers, threat) {
-        const rs = this._raidState;
-        if (!rs.active) {
-          Object.assign(rs, this._newRaidState(), { active: true, startedAt: chain.first || Date.now() });
-        }
-        if (kind === "raid") rs.kind = "raid";
-        else if (!rs.alertedKind) rs.kind = "damage";
-        rs.lastHitAt = chain.last;
-        rs.hits = Math.max(rs.hits, chain.count + chain.other);
-        rs.destroyed = Math.max(rs.destroyed, chain.destroyedAt.length);
-        rs.peakThreat = Math.max(rs.peakThreat, threat);
-        for (const [k, v] of chain.hits) rs.buildings.set(k, v);
-        for (const a of attackers) rs.attackers.set(a.pid, a);
-      }
-
-      // Когда оповещать: сразу при начале рейда; при эскалации (рост угрозы / новый атакующий) не дожидаясь кулдауна;
-      // иначе - раз в ALERT_COOLDOWN_MS как сводка. Возвращает "new" | "escalation" | "update" | null.
-      _nextAlertReason(kind, attackers, threat, now) {
-        const rs = this._raidState;
-        let reason = null;
-        const sinceAlert = now - rs.lastAlertAt;
-        const newAttacker = attackers.some(a => !rs.alertedPids.has(a.pid));
-
-        if (rs.lastAlertAt === 0) reason = "new";
-        else if (kind === "raid" && rs.alertedKind === "damage") reason = "new"; // «урон» превратился в настоящий рейд
-        else if ((threat > rs.alertedThreat || newAttacker) && sinceAlert >= Feature_Defense.ESCALATE_MIN_GAP_MS) reason = "escalation";
-        else if (sinceAlert >= Feature_Defense.ALERT_COOLDOWN_MS) reason = "update";
-
-        if (reason) {
-          rs.lastAlertAt = now;
-          rs.alertedThreat = Math.max(rs.alertedThreat, threat);
-          rs.alertedKind = kind;
-          for (const a of attackers) rs.alertedPids.add(a.pid);
-        }
-        return reason;
-      }
-
-      // Серия оборвалась (нет ударов дольше RAID_HIT_GAP_MS) -> итог рейда
-      _checkRaidEnd(now) {
-        const rs = this._raidState;
-        if (!rs.active) return;
-        if (now - this._chain.last <= Feature_Defense.RAID_HIT_GAP_MS) return;
-        this._raidState = this._newRaidState();
-        if (rs.lastAlertAt > 0) this.triggerRaidEnded(rs);
-      }
-
-      // Warn On Raid Tools: враг с рейдовым молотком (тир 2+) стоит у базы - предупреждаем ДО первого удара
-      _checkEarlyWarning(near, now) {
-        const sm = this.main.SettingsManager;
-        if (!(sm?.get("defenseWarnRaidTools") ?? true)) {
-          this._earlySince.clear();
-          return;
-        }
-        const present = new Set();
-        for (const e of near) {
-          if (now - e.seen > 2000) continue;
-          const right = this._rightOf(e, now);
-          const tier = right != null ? (this._toolTier[right] ?? -1) : -1;
-          if (tier < 2) continue;
-          const dist = this._distToBase(e.x, e.y);
-          if (dist > Feature_Defense.EARLY_RADIUS) continue;
-
-          present.add(e.pid);
-          if (!this._earlySince.has(e.pid)) this._earlySince.set(e.pid, now);
-          if (now - this._earlySince.get(e.pid) < Feature_Defense.EARLY_DWELL_MS) continue;
-          if (now - (this._earlyWarned.get(e.pid) || 0) < Feature_Defense.EARLY_COOLDOWN_MS) continue;
-          if (this._raidState.active) continue; // рейд уже идёт - отдельное предупреждение не нужно
-
-          this._earlyWarned.set(e.pid, now);
-          this.triggerEarlyWarning({
-            nick: e.nick, pid: e.pid, tier,
-            tool: this._toolNames[right] || "Raid tool",
-            dist: Math.round(dist),
-            x: Math.round(e.x / 100), y: Math.round(e.y / 100)
-          });
-        }
-        for (const pid of Array.from(this._earlySince.keys())) {
-          if (!present.has(pid)) this._earlySince.delete(pid);
-        }
-      }
-
-      // ───────────── Доставка оповещений ─────────────
-
-      _tellTeam(text) {
-        if (!this.main.SettingsManager?.get("defenseTellTeammates")) return;
-        const markerFeat = this._getMapMarkers();
-        if (markerFeat?._radarWs && markerFeat._radarWs.readyState === WebSocket.OPEN) {
-          markerFeat._radarWs.send(JSON.stringify({ type: "squad_chat", text }));
-        }
-      }
-
-      _webhookUrl() {
-        const url = String(this.main.SettingsManager?.get("defenseWebhookUrl") || "").trim();
-        return url.startsWith("https://discord.com/api/webhooks/") ? url : "";
-      }
-
-      // Discord: allowed_mentions ограничивает пинги, 429 (rate limit) -> одна повторная отправка по retry_after
-      _postWebhook(url, body, ping = false) {
-        const payload = Object.assign({}, body, { allowed_mentions: { parse: ping ? ["everyone"] : [] } });
-        const send = (attempt) => {
-          fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          }).then(async res => {
-            if (res.status === 429 && attempt < 2) {
-              let wait = 1500;
-              try {
-                const j = await res.json();
-                wait = Math.min(10000, Math.ceil((Number(j.retry_after) || 1.5) * 1000));
-              } catch (e) {}
-              CustomTimer.setTimeout(() => send(attempt + 1), wait);
-            } else if (!res.ok && !this._webhookErrLogged) {
-              this._webhookErrLogged = true;
-              0 && console.log("[Defense] Discord webhook error:", res.status);
-            }
-          }).catch(() => {});
-        };
-        send(0);
-      }
-
-      triggerEarlyWarning(info) {
-        const sm = this.main.SettingsManager;
-        const now = Date.now();
-        const lvl = Math.max(0, Math.min(3, info.tier - 1));
-        const level = Feature_Defense.THREAT_LABELS[lvl];
-        const text = `RAID TOOL NEAR [${level}]: ${info.nick} [ID:${info.pid}] (${info.tool}) ${info.dist}px from base`;
-
-        if (sm?.get("defenseOnScreenAlert")) {
-          this._activeAlertText = text;
-          this._activeAlertUntil = now + 5000;
-        }
-        this._beep(1 + lvl, 700);
-        this._tellTeam(`[DEFENSE] ${text}`);
-
-        const url = this._webhookUrl();
-        if (url) {
-          this._postWebhook(url, {
-            content: "",
-            embeds: [{
-              title: "Raid Tool Near Base",
-              color: parseInt(Feature_Defense.THREAT_COLORS[lvl].slice(1), 16),
-              fields: [
-                { name: "⚠️ Player", value: `**${info.nick}** (ID: \`${info.pid}\`) — Tool: **${info.tool}**`, inline: false },
-                { name: "📍 Distance", value: `${info.dist}px from base at \`[${info.x}, ${info.y}]\``, inline: false }
-              ],
-              timestamp: new Date().toISOString(),
-              footer: { text: "ARCT Defense Heuristics" }
-            }]
-          });
-        }
-      }
-
-      triggerRaidEnded(rs) {
-        const sm = this.main.SettingsManager;
-        const now = Date.now();
-        const durS = Math.max(1, Math.round(((rs.lastHitAt || now) - rs.startedAt) / 1000));
-        const level = Feature_Defense.THREAT_LABELS[rs.peakThreat] || Feature_Defense.THREAT_LABELS[0];
-        const names = Array.from(rs.attackers.values()).slice(0, 5).map(a => `${a.nick} [${a.pid}]`).join(", ") || "-";
-        const label = rs.kind === "raid" ? "RAID OVER" : "DAMAGE OVER";
-        const text = `${label}: ${durS}s, ${rs.hits} hits, ${rs.buildings.size} buildings hit${rs.destroyed ? `, ${rs.destroyed} destroyed` : ""} (peak ${level}) | ${names}`;
-
-        if (sm?.get("defenseOnScreenAlert")) {
-          this._activeAlertText = text;
-          this._activeAlertUntil = now + 5000;
-        }
-        this._beep(1, 520);
-        this._tellTeam(`[DEFENSE] ${text}`);
-
-        const url = this._webhookUrl();
-        if (url) {
-          this._postWebhook(url, {
-            content: "",
-            embeds: [{
-              title: rs.kind === "raid" ? "Raid Ended" : "Damage Ended",
-              color: 2278750,
-              fields: [
-                { name: "⏱ Duration", value: `${durS}s`, inline: true },
-                { name: "💥 Hits", value: String(rs.hits), inline: true },
-                { name: "🧱 Buildings hit / destroyed", value: `${rs.buildings.size} / ${rs.destroyed}`, inline: true },
-                { name: "🚨 Peak threat", value: `**${level}**`, inline: true },
-                { name: "⚔️ Attackers", value: names.slice(0, 1000), inline: false }
-              ],
-              timestamp: new Date().toISOString(),
-              footer: { text: "ARCT Defense Heuristics" }
-            }]
-          });
-        }
-      }
-
-      // ───────────── Оповещения ─────────────
-
-      _beep(count, freq) {
-        try {
-          const sm = this.main.SettingsManager;
-          if (!(sm?.get("defenseSound") ?? true)) return;
-          if (!this._audio) this._audio = new (window.AudioContext || window.webkitAudioContext)();
-          const ac = this._audio;
-          if (ac.state === "suspended") ac.resume();
-          for (let i = 0; i < count; i++) {
-            const t0 = ac.currentTime + i * 0.2;
-            const osc = ac.createOscillator();
-            const gain = ac.createGain();
-            osc.type = "square";
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.0001, t0);
-            gain.gain.exponentialRampToValueAtTime(0.12, t0 + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.15);
-            osc.connect(gain);
-            gain.connect(ac.destination);
-            osc.start(t0);
-            osc.stop(t0 + 0.16);
-          }
-        } catch (e) {}
-      }
-
-      triggerTestAlert() {
-        const me = this.main.get_local_player();
-        const wx = me ? me.x : 15000;
-        const wy = me ? me.y : 15000;
-        const tx = Math.round(wx / 100);
-        const ty = Math.round(wy / 100);
-
-        this._raid = {
-          attackers: [{ nick: "TestRaider", pid: 99, tool: "Super Hammer", tier: 3, x: tx, y: ty, wx: wx + 250, wy: wy }],
-          damaged: [{ x: wx, y: wy, type: M }],
-          until: Date.now() + 8000,
-          threat: 2,
-          focus: { x: wx, y: wy }
-        };
-
-        this.triggerAlert({
-          kind: "raid",
-          reason: "new",
-          attackers: [{ nick: "TestRaider", pid: 99, tool: "Super Hammer", tier: 3, hits: 12, primary: true, x: tx, y: ty }],
-          alliesNearCount: 1,
-          enemiesNearCount: 1,
-          damagedBuildings: [`Reidite Spike at (${tx}, ${ty})`],
-          totalBuildings: this._allyBuildings.length || 42,
-          destroyedCount: 0,
-          threat: 2
-        }, true);
-      }
-
-      // report.kind: "raid" (рядом чужой игрок) | "damage" (бьют, но игрока рядом нет - моб/неизвестно)
-      // report.reason: "new" | "escalation" | "update". Решение «оповещать ли» принимает _nextAlertReason (кулдаун там).
-      triggerAlert(report, isTest = false) {
-        const sm = this.main.SettingsManager;
-        const now = Date.now();
-        this._lastAlertTime = now;
-
-        const kind = report.kind || "raid";
-        const reason = report.reason || "new";
-        const includeAttacker = sm?.get("defenseAttackerInfo") ?? true;
-        const includePlayerCount = sm?.get("defensePlayerCountInfo") ?? true;
-        const includeBuildingHp = sm?.get("defenseBuildingHpInfo") ?? true;
-
-        const threat = report.threat || 0;
-        const level = Feature_Defense.THREAT_LABELS[threat];
-
-        const attackerStr = report.attackers.length > 0
-          ? report.attackers.map(a => `${a.primary ? "★" : ""}${a.nick} [ID:${a.pid}] (${a.tool})${a.hits ? ` x${a.hits}` : ""} at ${a.x}:${a.y}`).join(", ")
-          : (kind === "damage" ? "No player nearby (mob/unknown)" : "Unknown Attacker");
-
-        const head = kind === "damage" ? "DAMAGE [no player nearby]"
-          : reason === "escalation" ? `RAID ESCALATED [${level}]`
-          : reason === "update" ? `RAID ONGOING [${level}]`
-          : `RAID [${level}]`;
-
-        if (sm?.get("defenseOnScreenAlert") || isTest) {
-          this._activeAlertText = `${head}! ${attackerStr}`;
-          this._activeAlertUntil = now + 5000;
-        }
-
-        this._beep(kind === "damage" ? 1 : 2 + threat, kind === "damage" ? 520 : 880);
-
-        const teamHead = kind === "damage" ? `[DEFENSE] Buildings damaged (no player nearby)`
-          : reason === "escalation" ? `[DEFENSE] Raid escalated! [${level}]`
-          : reason === "update" ? `[DEFENSE] Raid ongoing [${level}]`
-          : `[DEFENSE] Raid Detected! [${level}]`;
-        const parts = [teamHead];
-        if (includeAttacker && kind === "raid") parts.push(`Attackers: ${attackerStr}`);
-        if (includePlayerCount) parts.push(`Players: ${report.enemiesNearCount} Enemies / ${report.alliesNearCount} Allies`);
-        if (includeBuildingHp && report.damagedBuildings?.length) {
-          const list = report.damagedBuildings.slice(0, 3).join("; ");
-          const more = report.damagedBuildings.length > 3 ? ` +${report.damagedBuildings.length - 3}` : "";
-          parts.push(`Damaged: ${list}${more}`);
-        }
-        this._tellTeam(parts.join(" | "));
-
-        const webhookUrl = this._webhookUrl();
-        if (webhookUrl) {
-          const embedTitle = String(sm?.get("defenseEmbedTitle") || "Raid Detected! Players:");
-          const title = kind === "damage" ? "Buildings Damaged (no player nearby)"
-            : reason === "escalation" ? "Raid Escalated!"
-            : reason === "update" ? "Raid Ongoing"
-            : embedTitle;
-          // @everyone - только на начале рейда и на эскалации до HIGH+; сводки и «урон без игрока» без пинга
-          const ping = !!sm?.get("defensePingEveryone") && kind === "raid" && (reason === "new" || (reason === "escalation" && threat >= 2));
-          const fields = [{ name: "🚨 Threat Level", value: `**${level}**`, inline: true }];
-
-          if (includeAttacker) {
-            fields.push({
-              name: "⚔️ Attacker Information",
-              value: report.attackers.length > 0
-                ? report.attackers.map(a => `• ${a.primary ? "★ " : ""}**${a.nick}** (ID: \`${a.pid}\`) — Tool: **${a.tool}**${a.hits ? ` — ${a.hits} hits` : ""} at \`[${a.x}, ${a.y}]\``).join("\n")
-                : (kind === "damage" ? "No player nearby (mob / unknown source)" : "Walls taking damage"),
-              inline: false
-            });
-          }
-
-          if (includePlayerCount) {
-            fields.push({
-              name: "👥 Player Count Information",
-              value: `Enemies: **${report.enemiesNearCount}** | Allies: **${report.alliesNearCount}**`,
-              inline: true
-            });
-          }
-
-          if (includeBuildingHp && report.damagedBuildings?.length) {
-            const list = report.damagedBuildings.slice(0, 8).map(s => `• ${s}`).join("\n");
-            fields.push({
-              name: "🧱 Damaged Buildings",
-              value: (list + (report.damagedBuildings.length > 8 ? `\n…и ещё ${report.damagedBuildings.length - 8}` : "")).slice(0, 1000),
-              inline: false
-            });
-          }
-
-          this._postWebhook(webhookUrl, {
-            content: ping ? "@everyone" : "",
-            embeds: [{
-              title,
-              color: parseInt(Feature_Defense.THREAT_COLORS[threat].slice(1), 16),
-              fields,
-              timestamp: new Date().toISOString(),
-              footer: { text: "ARCT Defense Heuristics" }
-            }]
-          }, ping);
-        }
-      }
-
-      // ───────────── Отрисовка ─────────────
-
-      drawScene(ctx) {
-        if (this.main.hidden || !ctx || !this.main.is_game_running()) return;
-        const sm = this.main.SettingsManager;
-        if (this._baseLocked || !sm?.get("defenseDebugBaseFill") || this._clusters.length === 0) return;
-
-        const cam = this.main.user?.cam;
-        if (!cam) return;
-
-        ctx.save();
-        ctx.fillStyle = "rgba(59, 130, 246, 0.15)";
-        ctx.strokeStyle = "rgba(59, 130, 246, 0.8)";
-        ctx.lineWidth = 3;
-        for (const c of this._clusters) {
-          const x = cam.x + c.minX;
-          const y = cam.y + c.minY;
-          ctx.fillRect(x, y, c.maxX - c.minX, c.maxY - c.minY);
-          ctx.strokeRect(x, y, c.maxX - c.minX, c.maxY - c.minY);
-        }
-        ctx.restore();
-      }
-
-      // Стрелка на край экрана в сторону рейда + расстояние
-      _drawRaidArrow(ctx) {
-        const f = this._raid.focus;
-        const cam = this.main.user?.cam;
-        if (!f || !cam) return;
-
-        const W = window.innerWidth, H = window.innerHeight;
-        const sx = cam.x + f.x, sy = cam.y + f.y;
-        const m = 70;
-        if (sx > m && sx < W - m && sy > m && sy < H - m) return; // рейд виден на экране
-
-        const cx = W / 2, cy = H / 2;
-        const dx = sx - cx, dy = sy - cy;
-        const scale = Math.min((W / 2 - m) / Math.max(Math.abs(dx), 1e-6), (H / 2 - m) / Math.max(Math.abs(dy), 1e-6));
-        const px = cx + dx * scale, py = cy + dy * scale;
-        const ang = Math.atan2(dy, dx);
-
-        const me = this.main.get_local_player();
-        const dist = me ? Math.round(Math.hypot(f.x - me.x, f.y - me.y) / 100) : null;
-        const color = Feature_Defense.THREAT_COLORS[this._raid.threat || 0];
-        const pulse = (Math.sin(Date.now() / 160) + 1) / 2;
-
-        ctx.save();
-        ctx.translate(px, py);
-        ctx.rotate(ang);
-        ctx.globalAlpha = 0.7 + pulse * 0.3;
-        ctx.beginPath();
-        ctx.moveTo(22, 0);
-        ctx.lineTo(-14, -15);
-        ctx.lineTo(-14, 15);
-        ctx.closePath();
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = "#000";
-        ctx.stroke();
-        ctx.restore();
-
-        if (dist !== null) {
-          ctx.save();
-          ctx.font = "bold 16px 'Baloo Paaji', sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.lineWidth = 4;
-          ctx.strokeStyle = "#000";
-          ctx.fillStyle = "#fff";
-          const lx = px - Math.cos(ang) * 34, ly = py - Math.sin(ang) * 34;
-          ctx.strokeText(String(dist), lx, ly);
-          ctx.fillText(String(dist), lx, ly);
-          ctx.restore();
-        }
-      }
-
-      drawUI(ctx) {
-        if (this.main.hidden || !ctx || !this.main.is_game_running()) return;
-        const sm = this.main.SettingsManager;
-        const now = Date.now();
-
-        // 1. Баннер тревоги
-        if (!this._baseLocked && now < this._activeAlertUntil && this._activeAlertText) {
-          ctx.save();
-          const pulse = Math.abs(Math.sin(now / 150));
-          ctx.fillStyle = `rgba(220, 38, 38, ${0.4 + pulse * 0.4})`;
-          ctx.fillRect(0, 0, window.innerWidth, 50);
-
-          ctx.font = "bold 22px 'Baloo Paaji', sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 4;
-          ctx.fillStyle = "#ffffff";
-          ctx.strokeText(this._activeAlertText, window.innerWidth / 2, 25);
-          ctx.fillText(this._activeAlertText, window.innerWidth / 2, 25);
-          ctx.restore();
-        }
-
-        // После смерти всё скрыто, пока не подтвердим свою базу
-        if (this._baseLocked) return;
-
-        const showBase = sm?.get("defenseShowBaseMap");
-        const raidActive = !!sm?.get("defenseDetectRaids") && now < this._raid.until;
-
-        // 2. Стрелка к рейду
-        if (raidActive && sm?.get("defenseOnScreenAlert")) this._drawRaidArrow(ctx);
-
-        // 3. Миникарта и большая карта
-        if (!showBase && !raidActive) return;
-
-        const world = this._getWorldSize();
-        const surfaces = [{ big: false }];
-        if (this._isBigMapOpen()) surfaces.push({ big: true });
-
-        for (const surface of surfaces) {
-          const mm = this._getMinimapBox();
-          const br = surface.big ? this._bigRect() : null;
-          const mapSize = surface.big ? br.s : 193;
-          const ox = surface.big ? br.x : mm.x;
-          const oy = surface.big ? br.y : mm.y;
-          const k = Math.min(surface.big ? br.s / 193 : 1, 1.8);
-
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(ox, oy, mapSize, mapSize);
-          ctx.clip();
-
-          // 3a. Каждая база отдельным прямоугольником; атакуемая — красная
-          if (showBase || raidActive) {
-            for (const c of this._clusters) {
-              const raided = raidActive && this._raid.damaged.some(d => d.x >= c.minX && d.x <= c.maxX && d.y >= c.minY && d.y <= c.maxY);
-              const a = this._project(c.minX, c.minY, surface, world);
-              const b = this._project(c.maxX, c.maxY, surface, world);
-              const w = Math.max(4, b.x - a.x);
-              const h = Math.max(4, b.y - a.y);
-              ctx.lineWidth = Math.min(k, 2);
-              ctx.strokeStyle = raided ? "rgba(255, 90, 60, 0.95)" : "rgba(59, 130, 246, 0.9)";
-              ctx.fillStyle = raided ? "rgba(255, 60, 40, 0.18)" : "rgba(59, 130, 246, 0.12)";
-              ctx.fillRect(a.x, a.y, w, h);
-              ctx.strokeRect(a.x, a.y, w, h);
-            }
-          }
-
-          // 3b. Вражеские постройки
-          if (showBase && this._hostileBuildings.length > 0) {
-            const s = 2 * k;
-            for (const b of this._hostileBuildings) {
-              const p = this._project(b.x, b.y, surface, world);
-              ctx.fillStyle = b.open ? "rgba(255, 140, 140, 0.55)" : "#ff2222";
-              ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
-            }
-          }
-
-          // 3c. Рейд: побитые постройки и атакующие
-          if (raidActive) {
-            const pulse = (Math.sin(now / 160) + 1) / 2;
-
-            for (const d of this._raid.damaged) {
-              const p = this._project(d.x, d.y, surface, world);
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, (2.5 + pulse * 2.5) * k, 0, Math.PI * 2);
-              ctx.fillStyle = `rgba(255, 170, 0, ${0.35 + pulse * 0.4})`;
-              ctx.fill();
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, 1.8 * k, 0, Math.PI * 2);
-              ctx.fillStyle = "#ffb000";
-              ctx.fill();
-            }
-
-            for (const a of this._raid.attackers) {
-              const p = this._project(a.wx, a.wy, surface, world);
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, (5 + pulse * 5) * k, 0, Math.PI * 2);
-              ctx.strokeStyle = `rgba(255, 30, 30, ${0.9 - pulse * 0.5})`;
-              ctx.lineWidth = 2;
-              ctx.stroke();
-
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, 3.5 * k, 0, Math.PI * 2);
-              ctx.fillStyle = "#ff1a1a";
-              ctx.fill();
-              ctx.lineWidth = 1.5;
-              ctx.strokeStyle = "#ffffff";
-              ctx.stroke();
-
-              if (a.nick) {
-                ctx.font = "bold 10px 'Baloo Paaji', sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "bottom";
-                ctx.lineWidth = 2.5;
-                ctx.strokeStyle = "#000";
-                ctx.fillStyle = "#fff";
-                const label = String(a.nick).slice(0, 10);
-                ctx.strokeText(label, p.x, p.y - 8 * k);
-                ctx.fillText(label, p.x, p.y - 8 * k);
-              }
-            }
-          }
-
-          ctx.restore();
-        }
-      }
-    }
 class Feature_PutToChest extends CheatFeatureBase {
       static id = "putToChest";
       static category = Ye;
@@ -14104,6 +14185,7 @@ class Feature_UnitDebugger extends CheatFeatureBase {
       // Иконки лежат в репозитории: images/Weather/blizzard.png и images/Weather/sandstorm.png
       _loadWeatherIcon(name) {
         const img = new Image();
+        img.crossOrigin = "anonymous";
         img.src = AssetsBaseUrl + "images/Weather/" + name + ".png";
         return img;
       }
@@ -18656,6 +18738,10 @@ class Feature_SkinChanger extends CheatFeatureBase {
         this._origValues = { skin: 0, acc: 0, bag: 0, book: 0 };
         // Последнее значение, которое мы САМИ записали в игру (undefined = подмены нет)
         this._applied = { skin: undefined, acc: undefined, bag: undefined, book: undefined };
+        // Скины тимейтов из радара: что записали мы (pid -> {skin,acc,bag,book}) и настоящие значения игры,
+        // чтобы клип мог показать оригинальный скин тимейта
+        this._allyApplied = {};
+        this._allyOrig = {};
         this._ready = false;
       }
 
@@ -18747,6 +18833,17 @@ class Feature_SkinChanger extends CheatFeatureBase {
 
       _resetApplied() {
         this._applied = { skin: undefined, acc: undefined, bag: undefined, book: undefined };
+        this._allyApplied = {};
+        this._allyOrig = {};
+      }
+
+      // Есть ли сейчас подмена скинов у тимейтов (клипу нужно знать, что кадр надо рисовать с оригиналами)
+      hasAllyOverrides() {
+        for (const pid in this._allyApplied) {
+          const a = this._allyApplied[pid];
+          for (const t in a) if (a[t] !== undefined) return true;
+        }
+        return false;
       }
 
       // Реальные id лежат в диапазоне < 990, маркеры хендшейка (991-994) в него не входят
@@ -18833,6 +18930,9 @@ class Feature_SkinChanger extends CheatFeatureBase {
       // Подхватываем настоящее значение из игры: если оно отличается от того,
       // что записали мы, значит это реальный скин/аксессуар/сумка/книга.
       _syncOrig(type, pid, unit) {
+        // Пока клип рисует чистый кадр, значения в игре временно подменяет/откатывает сам клип (snapshot/restore),
+        // поэтому «живому» значению верить нельзя - иначе подменённый скин запомнится как оригинальный
+        if (this.main._renderingCleanFrame) return;
         const live = this._readLive(type, pid, unit);
         if (live !== undefined && live !== this._applied[type]) {
           this._origValues[type] = live;
@@ -18860,47 +18960,32 @@ class Feature_SkinChanger extends CheatFeatureBase {
         const players = this.main.world?.players;
         const pInfo = pid != null && players ? players[pid] : null;
         if (unit) this._detectUnitKeys(unit, pInfo);
+        const ap = (this._allyApplied[pid] ??= {});
+        const orig = (this._allyOrig[pid] ??= {});
+        // пока клип рисует чистый кадр, значениям в игре верить нельзя (их временно меняет сам клип)
+        const sync = !this.main._renderingCleanFrame;
         for (const t in vals) {
           if (vals[t] == null) continue;
           const v = Number(vals[t]);
           const pk = this._propKeys[t];
-          if (pInfo && typeof pInfo === "object" && pk && pInfo[pk] !== v) pInfo[pk] = v;
           const uk = this._unitKeys[t];
-          if (unit && uk && unit[uk] !== v) unit[uk] = v;
-        }
-      }
-
-      applySkinChanger() {
-        if (!this.main.is_game_running()) return;
-        const sm = this.main.SettingsManager;
-        if (!sm) return;
-        const me = this.main.get_local_player();
-        const myPid = this.main.user?.id ?? me?.pid;
-
-        const cfg = {
-          skin: ["skinChangerActive", "skinChangerSkin"],
-          acc:  ["accChangerActive",  "accChangerAcc"],
-          bag:  ["bagChangerActive",  "bagChangerBag"],
-          book: ["bookChangerActive", "bookChangerBook"]
-        };
-        const hidden = !!this.main.hidden;
-
-        for (const t in cfg) {
-          if (!hidden && sm.get(cfg[t][0])) {
-            this._setOverride(t, myPid, me, sm.get(cfg[t][1]));
-          } else {
-            this._clearOverride(t, myPid, me);
+          if (sync) {
+            // значение отличается от записанного нами - значит это настоящий скин тимейта
+            let live;
+            if (pInfo && pk && this._isValidOrig(pInfo[pk])) live = pInfo[pk];
+            else if (unit && uk && this._isValidOrig(unit[uk])) live = unit[uk];
+            if (live !== undefined && live !== ap[t]) orig[t] = live;
           }
+          if (pInfo && typeof pInfo === "object" && pk && pInfo[pk] !== v) pInfo[pk] = v;
+          if (unit && uk && unit[uk] !== v) unit[uk] = v;
+          ap[t] = v;
         }
       }
 
-      run() {
-        if (!this.main.is_game_running()) return;
-
-        // 1. Держим собственный скин (и в world.players, и в unit)
-        this.applySkinChanger();
-
-        // 2. Отображаем кастомные скины других игроков скрипта (из радара)
+      // Скины тимейтов из радара (значения приходят готовыми)
+      _applyAllies() {
+        // как и со своим скином: в hidden / чистом кадре клипа подмену не показываем
+        if (this.main.hidden || this.main._clipForceOriginalSkin) return;
         const markerFeature = this.main.FeatureRegistry?.getInstance?.("mapMarkers");
         const scriptPlayers = markerFeature ? markerFeature._getMergedScriptPlayers() : (window.arctAllies || {});
         const playerUnits = this.main.world?.units?.[A] ?? [];
@@ -18928,6 +19013,65 @@ class Feature_SkinChanger extends CheatFeatureBase {
             ally.book !== undefined ? ally.book : null
           );
         }
+      }
+
+      // Возвращает тимейтам их настоящие скины (для чистого кадра клипа)
+      _clearAllies() {
+        const players = this.main.world?.players;
+        const playerUnits = this.main.world?.units?.[A] ?? [];
+        for (const pid in this._allyOrig) {
+          const orig = this._allyOrig[pid];
+          const pInfo = players ? players[pid] : null;
+          let unit = null;
+          for (let i = 0; i < playerUnits.length; i++) {
+            if (playerUnits[i] && playerUnits[i].pid == pid) { unit = playerUnits[i]; break; }
+          }
+          if (unit) this._detectUnitKeys(unit, pInfo);
+          for (const t in orig) {
+            const v = orig[t];
+            if (!this._isValidOrig(v)) continue;
+            const pk = this._propKeys[t];
+            const uk = this._unitKeys[t];
+            if (pInfo && typeof pInfo === "object" && pk && pInfo[pk] !== v) pInfo[pk] = v;
+            if (unit && uk && unit[uk] !== v) unit[uk] = v;
+          }
+        }
+      }
+
+      applySkinChanger() {
+        if (!this.main.is_game_running()) return;
+        const sm = this.main.SettingsManager;
+        if (!sm) return;
+        const me = this.main.get_local_player();
+        const myPid = this.main.user?.id ?? me?.pid;
+
+        const cfg = {
+          skin: ["skinChangerActive", "skinChangerSkin"],
+          acc:  ["accChangerActive",  "accChangerAcc"],
+          bag:  ["bagChangerActive",  "bagChangerBag"],
+          book: ["bookChangerActive", "bookChangerBook"]
+        };
+        // _clipForceOriginalSkin выставляет запись клипа в запасном режиме (когда чистый кадр снять нельзя)
+        const hidden = !!this.main.hidden || !!this.main._clipForceOriginalSkin;
+
+        for (const t in cfg) {
+          if (!hidden && sm.get(cfg[t][0])) {
+            this._setOverride(t, myPid, me, sm.get(cfg[t][1]));
+          } else {
+            this._clearOverride(t, myPid, me);
+          }
+        }
+        // Скины тимейтов: в hidden / чистом кадре клипа - оригинальные, иначе - из радара
+        if (hidden) this._clearAllies(); else this._applyAllies();
+      }
+
+      run() {
+        if (!this.main.is_game_running()) return;
+
+        // 1. Держим собственный скин (и в world.players, и в unit)
+        this.applySkinChanger();
+
+        // 2. Скины других игроков скрипта (из радара) применяет сам applySkinChanger() - см. выше
       }
     }
 
@@ -19636,6 +19780,723 @@ class Feature_JoinsLeaves extends CheatFeatureBase {
               ctx.fillText(it.ago, cardW - 10, y + CARD_H / 2);
               ctx.textAlign = "left";
             }
+
+            y += CARD_H + GAP;
+          }
+        } finally {
+          ctx.restore();
+        }
+      }
+    }
+    // =====================================================================================
+    // Kill & Quest Feed — перенос из SpriteX (spritex_user.js, блок LW / yW / DW / dt / qW / JW).
+    // Игра не присылает события «убил» / «сдал квест»: всё выводится из скачков счёта игроков
+    // топ-10 лидерборда (и твоего). Скачок ~15% счёта умершего = килл, награда квеста = квест,
+    // бонус крафта = крафт, исчезнувший рядом зверь / смена транспорта = приручение.
+    // =====================================================================================
+    class Feature_KillFeed extends CheatFeatureBase {
+      static id = "killFeed";
+      static category = Ve;
+      static enabled = true;
+
+      constructor(t) {
+        super(t);
+        // Состояние (LW в SpriteX)
+        this.LW = {
+          prev: new Map(),      // pid -> {score, at, rate}
+          known: new Map(),     // pid -> {score, at} последний известный счёт
+          age: new Map(),       // pid -> {spawn, since}
+          claimed: new Map(),   // pid -> Set(индексы сданных квестов)
+          deaths: [],           // недавние смерти {pid,name,at,score,stale,pos}
+          jumps: [],            // скачки счёта, ждущие классификации
+          list: [],             // готовые записи фида (макс. 6)
+          showUntil: 0,
+          offered: null,        // индексы квестов, которые предлагает сервер
+          offeredAt: 0
+        };
+        // Бонусы крафта сервера (PW в SpriteX): item -> bonus / time
+        this.PW = { bonus: new Map(), time: new Map() };
+        this._bonusFromServer = false;
+        this.SCORE_MIN = 3e3;                    // $W
+        this.QUEST_MAX_SCORE = 3e5;              // выше этого счёта квесты не показываем
+        this.EMERALD = [Items.EMERALD_MACHINE];  // et
+        // [ключ, юнит-тип моба, предмет-транспорт, название]  (BW)
+        this.MOBS = [
+          ["BABY_DRAGON", At, Items.BABY_DRAGON, "a Baby Dragon"],
+          ["BABY_LAVA", Rt, Items.BABY_LAVA, "a Baby Lava Dragon"],
+          ["BABY_MAMMOTH", zt, Items.BABY_MAMMOTH, "a Baby Mammoth"],
+          ["HAWK", Ot, Items.HAWK, "a Hawk"],
+          ["BOAR", Et, Items.MOUNT_BOAR, "a Boar"],
+          ["CRAB", St, Items.CRAB_BOSS, "a King Crab"]
+        ];
+        // [название, награда, множитель дедлайна, минимальный возраст (мс)]  (YW)
+        this.QUESTS = [
+          ["Dragon Orb (dragon heart)", 7500, 7, 0],
+          ["Dragon Cube (amethyst)", 7500, 5, 0],
+          ["Green Gem (no life lost)", 7500, 4, 12e5],
+          ["Orange Gem (5 chests)", 3e3, 3, 0],
+          ["Blue Gem (peaceful)", 3e3, 6, 0],
+          ["Pure Fur (winter bread)", 3e3, 6, 0],
+          ["Dark Fur (winter day)", 3e3, 6, 48e4],
+          ["Lava Orb (lava dragon)", 1e4, 5, 0],
+          ["Lava Cube (reidite)", 7500, 3, 0],
+          ["Pitchfork (desert bread)", 6e3, 4, 0],
+          ["Pilot Glasses (emerald)", 7500, 3, 0],
+          ["Bag Slot (sand worm)", 1e4, 3, 0],
+          ["Bag Slot (every biome)", 1e4, 3, 48e4]
+        ];
+        this.WEAPON_WORDS = new Set(["Sword", "Spear", "Axe", "Bow", "Hammer", "Crossbow", "Wand"]);
+        this.zW = new Map();   // видимые приручаемые мобы сейчас: unit -> {name,x,y}
+        this.RW = [];          // недавно пропавшие мобы {name,x,y,at}
+        this.pW = new Map();   // pid -> {v: транспорт, at: когда сменился}
+        this._xk = new Map();  // pid -> {name}
+        this._lastAttackAt = 0; // Id в SpriteX: время последней атаки
+        this._itemNames = null;
+        this._aliveMap = new Map();  // pid -> имя живого игрока (для запасного детектора смерти)
+        this._deadAt = new Map();    // pid -> время последней зарегистрированной смерти (дедупликация хук + скан)
+        this._dbgAt = 0;
+        this._seedBonus();
+      }
+
+      // Запасные значения бонусов из recipes (пока не пришёл handshake): item -> bonus (только bonus > 0)
+      _seedBonus() {
+        const seed = [
+          [164, 200, 20], [163, 200, 20], [165, 200, 20], [166, 200, 20], [228, 20, 15], [331, 5, 5],
+          [61, 387, 80], [19, 657, 90], [110, 659, 90], [367, 50, 7], [119, 10, 5],
+          [183, 16, 5], [184, 26, 5], [185, 50, 10], [186, 62, 10], [187, 79, 15], [188, 200, 15], [189, 1058, 20],
+          [135, 5, 5], [136, 5, 10], [62, 30, 15], [63, 70, 20], [64, 331, 30], [65, 411, 60], [66, 607, 90],
+          [72, 4007, 90], [46, 50, 10], [283, 20, 5], [85, 1, 1], [282, 20, 1],
+          [154, 1360, 40], [33, 610, 30], [155, 8980, 60], [71, 569, 80], [37, 896, 90],
+          [333, 350, 60], [363, 1e3, 60], [364, 1e3, 60], [365, 1e3, 60], [366, 1e3, 60]
+        ];
+        for (const [item, bonus, time] of seed) {
+          this.PW.bonus.set(item, bonus);
+          this.PW.time.set(item, time);
+        }
+      }
+
+      init() {
+        super.init();
+        const client = this.main.client;
+
+        // handshake: список игроков (возраст / известный счёт) + бонусы крафта (pkt[25])
+        const origHandshake = client.handshake;
+        if (typeof origHandshake === "function") {
+          client.handshake = (...t) => {
+            try { this._onHandshake(t[0]); } catch (e) {}
+            return origHandshake.apply(client, t);
+          };
+        }
+
+        // new_player: игрок только что зашёл -> возраст = сейчас
+        const origNewPlayer = client.new_player;
+        if (typeof origNewPlayer === "function") {
+          client.new_player = (...t) => {
+            const res = origNewPlayer.apply(client, t);
+            try {
+              const id = Number(t[0]?.[1]);
+              if (Number.isInteger(id) && id >= 0) {
+                if (typeof t[0][2] === "string") this._xk.set(id, { name: t[0][2] });
+                this._onSpawn(id);
+              }
+            } catch (e) {}
+            return res;
+          };
+        }
+
+        // kill_player: игрок умер / вышел -> запись в deaths
+        const origKillPlayer = client.kill_player;
+        if (typeof origKillPlayer === "function") {
+          client.kill_player = (...t) => {
+            try {
+              const raw = t[0];
+              const id = Array.isArray(raw) ? raw[1] ?? raw[0] : raw;
+              if (id != null) this._onDeath(Number(id));
+            } catch (e) {}
+            return origKillPlayer.apply(client, t);
+          };
+        }
+
+        // send_attack: запоминаем время твоей последней атаки (Id в SpriteX)
+        const origAttack = client.send_attack;
+        if (typeof origAttack === "function") {
+          client.send_attack = (...t) => {
+            this._lastAttackAt = Date.now();
+            return origAttack.apply(client, t);
+          };
+        }
+
+        // Отрисовка
+        this.draw_ui = this.main.game.draw_UI;
+        this.main.game.draw_UI = (...t) => {
+          this.draw_ui.apply(this.main.game, t);
+          this.draw(this.main.ctx);
+        };
+
+        // Цикл раз в 200 мс
+        const run = () => { try { this._tick(); } catch (e) {} };
+        try {
+          if (typeof CustomTimer !== "undefined" && CustomTimer.setInterval) CustomTimer.setInterval(run, 200);
+          else setInterval(run, 200);
+        } catch (e) { setInterval(run, 200); }
+      }
+
+      // ------------------------------------------------------------------ данные игры
+      _myPid() {
+        const id = this.main.user?.id;
+        return Number.isInteger(id) ? id : null;   // PK()
+      }
+
+      _spectating() {
+        return !!this.main.FeatureRegistry?.getInstance?.("spectator")?.enabled;   // Ea
+      }
+
+      _isCommunity() {   // UW
+        try { return String(this.main.client?.socket?.url || "").includes("community"); } catch (e) { return false; }
+      }
+
+      _score(pid) {   // wW
+        const p = this.main.world?.players?.[pid];
+        if (!p) return 0;
+        const d = Object.values(p)[13];
+        return "number" == typeof d && isFinite(d) ? d : 0;
+      }
+
+      _ldbIds() {
+        const ids = this.main.user?.ldb?.ids;
+        if (Array.isArray(ids)) return ids;
+        if (ids && typeof ids.length === "number") return Array.from(ids);
+        return [];
+      }
+
+      _pos(pid) {   // xW
+        try {
+          if (pid === this._myPid()) {
+            const me = this.main.get_local_player();
+            if (!me) return null;
+            const p = this.getPos(me);
+            return [p.x, p.y];
+          }
+          const units = this.main.world?.units?.[A] || [];
+          for (let i = 0; i < units.length; i++) {
+            const u = units[i];
+            if (u && u.pid === pid) return [u.x, u.y];
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      _name(pid) {   // XW
+        if (pid === this._myPid()) return "You";
+        const x = this._xk.get(pid);
+        if (x && x.name) return x.name;
+        const jl = this.main.FeatureRegistry?.getInstance?.("joinsLeaves");
+        const jn = jl?._xk?.get(pid)?.name;
+        if (jn) return jn;
+        const p = this.main.world?.players?.[pid];
+        const v = p ? Object.values(p)[0] : null;
+        return typeof v === "string" && v ? v : "id " + pid;
+      }
+
+      _skin(pid) {   // jW
+        try {
+          const jl = this.main.FeatureRegistry?.getInstance?.("joinsLeaves");
+          if (!jl) return -1;
+          const s = jl._readSkin?.(pid);
+          if (Number.isInteger(s) && s > 0) return s;
+          const b = jl._bestSkin?.(pid);
+          if (Number.isInteger(b) && b >= 0) return b;
+          return Number.isInteger(s) ? s : -1;
+        } catch (e) { return -1; }
+      }
+
+      _ct(id) {   // ct: название предмета
+        try {
+          if (!this._itemNames) {
+            this._itemNames = new Map();
+            for (const [k, v] of Object.entries(Items)) if (Number.isInteger(v) && !this._itemNames.has(v)) this._itemNames.set(v, k);
+          }
+          const k = this._itemNames.get(id);
+          if (!k) return "item " + id;
+          const w = k.split("_");
+          if (w.length > 1 && this.WEAPON_WORDS.has(w[0].charAt(0) + w[0].slice(1).toLowerCase())) w.push(w.shift());   // SWORD_GOLD -> Gold Sword
+          return w.map(s => s.charAt(0) + s.slice(1).toLowerCase()).join(" ");
+        } catch (e) { return "item " + id; }
+      }
+
+      // ------------------------------------------------------------------ события
+      _onHandshake(pkt) {
+        if (!pkt) return;
+        const list = pkt[4];
+        if (Array.isArray(list)) {
+          for (const f of list) {
+            if (!f || typeof f !== "object") continue;
+            const id = f.i;
+            if (!Number.isInteger(id) || id < 0 || id > 120) continue;
+            if (typeof f.n !== "string" || !f.n.length || f.n.length > 32) continue;
+            this._xk.set(id, { name: f.n });
+            this._zw(id, f.p);
+          }
+        }
+        this._parseBonus(pkt[25]);
+      }
+
+      _zw(pid, p) {   // ZW
+        const L = this.LW, d = Date.now();
+        L.age.has(pid) || L.age.set(pid, { spawn: 0, since: d });
+        const f = (b => b >= 2e4 ? 1e3 * (b - 2e4) : b >= 1e4 ? 100 * (b - 1e4) : b)(+p || 0);
+        f > 0 && L.known.set(pid, { score: f, at: d });
+      }
+
+      _parseBonus(list) {
+        if (!Array.isArray(list)) return;
+        this.PW = { bonus: new Map(), time: new Map() };
+        this._bonusFromServer = true;
+        for (const b of list) {
+          if (!b || "object" != typeof b) continue;
+          const c = Number(b.item), d = Number(b.bonus), f = Number(b.time);
+          Number.isInteger(c) && f > 0 && this.PW.time.set(c, f);
+          !Number.isInteger(c) || c < 0 || c > 2e3 || !Number.isFinite(d) || d < 0 || this.PW.bonus.set(c, d);
+        }
+      }
+
+      _onSpawn(pid) {
+        const d = Date.now(), L = this.LW;
+        L.age.set(pid, { spawn: d, since: d });
+        this._deadAt.delete(pid);
+        L.claimed.delete(pid);
+        L.prev.delete(pid);
+        L.known.delete(pid);
+      }
+
+      _onDeath(pid) {
+        if (!Number.isInteger(pid)) return;
+        const L = this.LW, d = Date.now();
+        if (d - (this._deadAt.get(pid) || 0) < 3e3) return;   // хук kill_player и запасной скан не должны дублировать смерть
+        this._deadAt.set(pid, d);
+        this._aliveMap.delete(pid);
+        const f = L.known.get(pid) || null;
+        const name = this._name(pid), pos = this._pos(pid);
+        L.prev.delete(pid);
+        L.age.delete(pid);
+        L.claimed.delete(pid);
+        L.known.delete(pid);
+        if (this.enabled && this.main.is_game_running() && !this._spectating()) {
+          L.deaths.push({ pid, name, at: d, score: f ? f.score : 0, stale: !!(f && d - f.at > 6e4), pos });
+          if (window._arctKFDebug) console.log("[KillFeed] death", name, "knownScore", f ? f.score : 0, "stale", !!(f && d - f.at > 6e4));
+          this._resolve(d);
+        }
+      }
+
+      // ------------------------------------------------------------------ вспомогательные (SpriteX: dt, NW, DW, HW, SW, JW, qW, vW)
+      _dt(gain, slack, onlyEmerald) {   // dt: подходящие предметы по бонусу крафта
+        if (this._isCommunity()) return [];
+        const f = [], a = this.EMERALD.filter(Number.isInteger);
+        for (const [A2, W] of this.PW.bonus) {
+          const t = a.indexOf(A2) >= 0;
+          if (onlyEmerald ? !t : !(W >= this.SCORE_MIN || t)) continue;
+          const K = Math.abs(gain - W);
+          K <= slack + 20 && f.push([A2, 1, K]);
+        }
+        return f.sort((e, b) => e[2] - b[2]);
+      }
+
+      _offered() {   // NW: какие квесты предлагает сервер (по DOM quest_N), кэш 30 с
+        const b = Date.now(), L = this.LW;
+        if (L.offered && b - L.offeredAt < 3e4) return L.offered;
+        const c = [];
+        try {
+          for (let i = 0; i < this.QUESTS.length; i++) document.getElementById("quest_" + (i + 1)) && c.push(i);
+        } catch (e) {}
+        L.offered = c.length ? c : this.QUESTS.map((e, i) => i);
+        L.offeredAt = b;
+        return L.offered;
+      }
+
+      _dq(pid, gain, slack, now) {   // DW: кандидаты-квесты (одиночные и пары)
+        if (this._isCommunity()) return [];
+        // у игроков с большим счётом квесты не пишем: только килл или крафт
+        const sc = Math.max(this._score(pid), (this.LW.known.get(pid) || {}).score || 0);
+        if (sc > this.QUEST_MAX_SCORE) return [];
+        const L = this.LW;
+        const f0 = L.age.get(pid);
+        const [a, A2] = f0 ? (f0.spawn ? [now - f0.spawn, now - f0.spawn] : [now - f0.since, 1 / 0]) : [0, 1 / 0];
+        const W = L.claimed.get(pid) || new Set();
+        const t = this._offered().filter(b => {
+          const c = this.QUESTS[b];
+          return !(W.has(b) || A2 < c[3] || a > 48e4 * c[2] + 6e4);
+        });
+        const K = [];
+        for (const b of t) {
+          const f = Math.abs(gain - this.QUESTS[b][1]);
+          if (f <= slack) { const c = [b]; c.err = f; K.push(c); }
+        }
+        for (let b = 0; b < t.length; b++) for (let f = b + 1; f < t.length; f++) {
+          const a2 = Math.abs(gain - this.QUESTS[t[b]][1] - this.QUESTS[t[f]][1]);
+          if (a2 <= slack) { const c = [t[b], t[f]]; c.err = a2 + 400; K.push(c); }
+        }
+        return K.sort((b, c) => b.err - c.err);
+      }
+
+      _group(names) {   // HW: «Dragon Sword/Spear» -> «Dragon Weapon»
+        const c = [], d = new Map();
+        for (const f of names) {
+          const b = String(f).split(" "), a = b.pop(), A2 = b.join(" ");
+          if (A2 && this.WEAPON_WORDS.has(a)) {
+            if (d.has(A2)) { c[d.get(A2)].n++; continue; }
+            d.set(A2, c.length);
+          }
+          c.push({ t: String(f), pre: A2, n: 1 });
+        }
+        return c.map(b => b.n > 1 ? b.pre + " Weapon" : b.t);
+      }
+
+      _push(entry) {   // SW
+        const L = this.LW;
+        L.list.unshift(entry);
+        L.list.length > 6 && L.list.pop();
+        L.showUntil = Date.now() + 15e3;
+      }
+
+      _held(pid, cands) {   // vW: что у игрока в руке / на себе из списка кандидатов
+        try {
+          const units = this.main.world?.units?.[A] || [];
+          for (let i = 0; i < units.length; i++) {
+            const a = units[i];
+            if (a && a.pid === pid) return cands.indexOf(a.right) >= 0 ? a.right : cands.indexOf(a.clothe) >= 0 ? a.clothe : null;
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      _tame(pid, pos, now) {   // qW: приручение (транспорт сменился на моба / моб пропал рядом)
+        try {
+          const units = this.main.world?.units?.[A] || [];
+          for (let i = 0; i < units.length; i++) {
+            const a = units[i];
+            if (!a || a.pid !== pid) continue;
+            const veh = a.vehicle, W = this.pW.get(pid);
+            if (W && W.v === (0 | veh) && W.at && now - W.at < 15e3) for (const [, , item, name] of this.MOBS) if (Number.isInteger(item) && veh === item) return name;
+            break;
+          }
+        } catch (e) {}
+        if (!pos) return null;
+        for (let b = this.RW.length - 1; b >= 0; b--) {
+          const f = this.RW[b];
+          if (now - f.at < 6e3 && Math.hypot(f.x - pos[0], f.y - pos[1]) < 320) return f.name;
+        }
+        return null;
+      }
+
+      _estKill(b, c) {   // JW: килл жертвы вне топ-10 (оценка по счёту 10-го места)
+        if (!b.pos) return -1;
+        if (b.pid === this._myPid() && !(c - (this._lastAttackAt || 0) < 5500)) return -1;
+        const f = this._ldbIds();
+        if (f.length < 10) return -1;
+        const a = this._score(f[9]) || (this.LW.known.get(f[9]) || {}).score || 0;
+        if (!(a > 0) || b.gain > .15 * a * 1.1 + b.slack) return -1;
+        let A2 = -1, W = 700;
+        for (let i = 0; i < this.LW.deaths.length; i++) {
+          const d = this.LW.deaths[i];
+          if (d.pid === b.pid || d.score || !d.pos) continue;
+          const g = Math.hypot(d.pos[0] - b.pos[0], d.pos[1] - b.pos[1]);
+          g < W && (W = g, A2 = i);
+        }
+        return A2;
+      }
+
+      _trackMobs(now) {   // блок слежения за мобами и транспортом из тика
+        const world = this.main.world, d = new Map();
+        for (const [, unitType, , name] of this.MOBS) {
+          const arr = world?.units?.[unitType];
+          if (!arr) continue;
+          for (let i = 0; i < arr.length; i++) {
+            const f = arr[i];
+            f && f.r && d.set(f, { name, x: f.x, y: f.y });
+          }
+        }
+        for (const [b, f] of this.zW) d.has(b) || this.RW.push({ name: f.name, x: f.x, y: f.y, at: now });
+        try {
+          const b = world?.units?.[A] || [];
+          for (let i = 0; i < b.length; i++) {
+            const f = b[i];
+            if (!f) continue;
+            const pid = f.pid, v = 0 | f.vehicle, W = this.pW.get(pid);
+            W ? W.v !== v && (W.v = v, W.at = now) : this.pW.set(pid, { v, at: 0 });
+          }
+          this.pW.size > 400 && this.pW.clear();
+        } catch (e) {}
+        this.zW = d;
+        this.RW = this.RW.filter(b => now - b.at < 8e3);
+      }
+
+      // Запасной детектор смерти (как у Joins & Leaves): игра не всегда вызывает client.kill_player, поэтому
+      // следим за world.players: игрок был живым и пропал / стал alive=false -> считаем смертью.
+      _scanDeaths(now) {
+        const players = this.main.world?.players;
+        if (!players || typeof players !== "object") return;
+        const seen = new Set();
+        const each = (p, pid) => {
+          if (!p || typeof p !== "object") return;
+          const vals = Object.values(p);
+          const name = typeof vals[0] === "string" ? vals[0] : null;
+          let alive = p.alive;
+          if (typeof alive !== "boolean") alive = vals.find(v => typeof v === "boolean");
+          if (alive && name && name !== "spectator") { seen.add(pid); this._aliveMap.set(pid, name); }
+        };
+        if (Array.isArray(players)) for (let i = 0; i < players.length; i++) each(players[i], i);
+        else for (const k of Object.keys(players)) each(players[k], Number(k));
+        for (const [pid, name] of [...this._aliveMap]) {
+          if (seen.has(pid)) continue;
+          this._aliveMap.delete(pid);
+          this._xk.has(pid) || this._xk.set(pid, { name });
+          this._onDeath(pid);
+        }
+      }
+
+      // ------------------------------------------------------------------ цикл 200 мс
+      _tick() {
+        const L = this.LW;
+        if (!this.enabled || !this.main.is_game_running() || this._spectating()) {
+          L.prev.clear();
+          L.deaths.length = 0;
+          L.jumps.length = 0;
+          this._aliveMap.clear();
+          return;
+        }
+        const d = this._ldbIds().slice(0, 10);
+        const f = this._myPid();
+        const a = Date.now();
+        null != f && d.indexOf(f) < 0 && d.push(f);
+        try { this._trackMobs(a); } catch (e) {}
+        try { this._scanDeaths(a); } catch (e) {}
+        if (window._arctKFDebug && a - this._dbgAt > 5e3) {
+          this._dbgAt = a;
+          console.log("[KillFeed] status", "top10:", d.map(i => i + "=" + this._score(i)).join(" "), "| tracked alive:", this._aliveMap.size, "| known:", L.known.size, "| deaths:", L.deaths.length, "| jumps:", L.jumps.length, "| feed:", L.list.length);
+        }
+        let A2 = 3e3;
+        for (const id of this.EMERALD) {
+          const c = this.PW.bonus.get(id);
+          c > 0 && (A2 = Math.min(A2, .85 * c));
+        }
+        // Килл жертвы со счётом < 20k даёт < 3000 очков. Если бонус Emerald Machine не пришёл (handshake пропущен /
+        // его нет на сервере), порог оставался 3000 и такие килы вообще не попадали в jumps. Держим порог низким:
+        // мелкие (low) скачки, не совпавшие с килом, всё равно отбрасываются в _resolve.
+        A2 = Math.min(A2, 400);
+        for (const b of d) {
+          if (!this.main.world?.players?.[b]) continue;
+          const c = this._score(b);
+          if (!(c >= 0)) continue;
+          c > 0 && L.known.set(b, { score: c, at: a });
+          const p = L.prev.get(b);
+          if (!p) { L.prev.set(b, { score: c, at: a, rate: 0 }); continue; }
+          if (c === p.score) continue;
+          const dt = Math.max(1, a - p.at), W = c - p.score, t = p.rate * dt;
+          if (p.score = c, p.at = a, W >= Math.max(A2, 4 * t + 200)) {
+            const sl = Math.min(t, W / 3) + (c >= 1e6 ? 2e3 : c >= 1e4 ? 200 : 20) + 50;
+            if (window._arctKFDebug) console.log("[KillFeed] jump", this._name(b), "gain", Math.round(W - t), "score", c, "deaths", L.deaths.map(x => x.name + ":" + x.score));
+            L.jumps.push({
+              pid: b, name: this._name(b), skin: this._skin(b),
+              gain: Math.round(W - t), slack: sl, at: a, pos: this._pos(b), low: W < 3e3
+            });
+          } else if (W > 0) {
+            const r = W / dt;
+            p.rate = p.rate ? .75 * p.rate + .25 * r : r;
+          }
+        }
+        L.jumps.length && this._resolve(a);
+      }
+
+      // ------------------------------------------------------------------ классификация скачка (yW)
+      _resolve(b) {
+        const L = this.LW;
+        L.deaths = L.deaths.filter(c => b - c.at < 6e3);
+        for (let c = 0; c < L.jumps.length; c++) {
+          const d = L.jumps[c];
+          // 1) килл: скачок ≈ 15% счёта умершего
+          let f = -1, a = 1 / 0;
+          for (let i = 0; i < L.deaths.length; i++) {
+            const e = L.deaths[i];
+            if (e.pid === d.pid || !e.score) continue;
+            const A2 = .15 * e.score, W = Math.max(200, A2 * (e.stale ? .3 : .12)) + d.slack, t = Math.abs(d.gain - A2);
+            t <= W && t < a && (a = t, f = i);
+          }
+          if (f >= 0) {
+            const e = L.deaths.splice(f, 1)[0];
+            this._push({ t: "k", who: d.name, skin: d.skin, other: e.name, gain: d.gain, at: b });
+            L.jumps.splice(c--, 1);
+            continue;
+          }
+          if (b - d.at < 1500) continue;   // ждём пакет смерти
+          d.pos = d.pos || this._pos(d.pid);
+          const own = d.pid === this._myPid();
+          // 2) мелкий скачок: только Emerald Machine
+          if (d.low) {
+            const g = this._dt(d.gain, d.slack, true);
+            g.length && !own && this._push({ t: "c", who: d.name, skin: d.skin, other: this._ct(g[0][0]) + "?", gain: d.gain, at: b });
+            L.jumps.splice(c--, 1);
+            continue;
+          }
+          // 3) крафт с несколькими кандидатами: смотрим, что в руке / на игроке
+          if (d.cands) {
+            const g = this._held(d.pid, d.cands);
+            if (null == g && b < d.waitTil) continue;
+            const names = null != g ? [this._ct(g)] : this._group(d.cands.map(x => this._ct(x)));
+            this._push({
+              t: "c", who: d.name, skin: d.skin,
+              other: names.slice(0, 3).join(" / ") + (names.length > 3 ? " / …" : "") + (null != g ? "" : "?"),
+              gain: d.gain, at: b
+            });
+            L.jumps.splice(c--, 1);
+            continue;
+          }
+          // 4) приручение
+          const W2 = this._tame(d.pid, d.pos, b);
+          if (W2) {
+            this._push({ t: "t", who: d.name, skin: d.skin, other: W2, gain: d.gain, at: b });
+            L.jumps.splice(c--, 1);
+            continue;
+          }
+          // 5) квест или крафт
+          const t = this._dq(d.pid, d.gain, d.slack, b);
+          const K = this._dt(d.gain, d.slack).map(x => Object.assign(x, { score: x[2] }));
+          const F = t.length ? t[0].err : 1 / 0, u = K.length ? K[0].score : 1 / 0;
+          if (t.length && F <= u) {
+            const g = t.filter(x => x.err <= F + 120);
+            if (1 === g.length) {
+              const s = L.claimed.get(d.pid) || new Set();
+              g[0].forEach(q => s.add(q));
+              L.claimed.set(d.pid, s);
+            }
+            this._push({ t: "q", who: d.name, skin: d.skin, other: g.every(x => 2 === x.length) ? "two quests" : "a quest", gain: d.gain, at: b });
+            L.jumps.splice(c--, 1);
+            continue;
+          }
+          if (K.length) {
+            if (own) { L.jumps.splice(c--, 1); continue; }
+            const g = [...new Set(K.filter(x => x.score <= u + 120).map(e => e[0]))];
+            if (1 === g.length) {
+              this._push({ t: "c", who: d.name, skin: d.skin, other: this._ct(K[0][0]) + (K.length > 1 ? "?" : ""), gain: d.gain, at: b });
+              L.jumps.splice(c--, 1);
+              continue;
+            }
+            d.cands = g;
+            d.waitTil = b + (d.pos ? 6e3 : 0);
+            c--;
+            continue;
+          }
+          // 6) килл жертвы вне топ-10
+          const h = this._estKill(d, b);
+          if (h >= 0) {
+            const e = L.deaths.splice(h, 1)[0];
+            this._push({ t: "k", who: d.name, skin: d.skin, other: e.name, gain: d.gain, at: b, est: 100 * Math.round(d.gain / .15 / 100) });
+          }
+          L.jumps.splice(c--, 1);
+        }
+      }
+
+      // ------------------------------------------------------------------ отрисовка (карточки как в SpriteX / Joins & Leaves «New»)
+      draw(ctx) {
+        if (!this.enabled || this.main.hidden || !ctx) return;
+        const L = this.LW, now = Date.now();
+        if (!(L.list.length && now < L.showUntil)) return;
+        if (!this.main.is_game_running()) return;
+
+        const CARD_H = 44, GAP = 5, ICON = 30, W = 120;
+        const jl = this.main.FeatureRegistry?.getInstance?.("joinsLeaves");
+
+        // ниже карточек Joins & Leaves, если они сейчас на экране
+        let top = 385;
+        try {
+          if (jl && jl.enabled && !this.main.hidden) {
+            const n = (jl.newPlayerToggle ? jl.Join.length : 0) + (jl.killPlayerToggle ? jl.Leave.length : 0);
+            if (n) {
+              if (jl._mode() === "Old") top = 400 - 14 + 22 * n + 6;
+              else {
+                const total = n * (CARD_H + GAP) - GAP;
+                const avail = Math.max(160, window.innerHeight - 385 - 130);
+                const sc = total > avail ? Math.max(.55, avail / total) : 1;
+                top = 385 + (total + GAP) * sc;
+              }
+            }
+          }
+        } catch (e) {}
+
+        ctx.save();
+        try {
+          const rows = L.list.slice();
+          const total = rows.length * (CARD_H + GAP) - GAP;
+          const avail = Math.max(160, window.innerHeight - top - 130);
+          const scale = total > avail ? Math.max(.55, avail / total) : 1;
+          ctx.translate(0, top);
+          ctx.scale(scale, scale);
+          ctx.font = "16px Baloo Paaji";
+          ctx.textBaseline = "middle";
+          ctx.textAlign = "left";
+
+          const width = s => (s ? ctx.measureText(String(s)).width : 0);
+          const fit = (s, maxW) => {
+            let t = String(s == null ? "" : s);
+            if (width(t) > maxW) {
+              while (t.length > 1 && width(t + "…") > maxW) t = t.slice(0, -1);
+              t += "…";
+            }
+            return t;
+          };
+          const ago = ts => {
+            if (!ts) return "";
+            const d = Math.max(0, Math.floor((now - ts) / 1e3));
+            return (d < 60 ? d + "s" : d < 3600 ? Math.floor(d / 60) + "m" : Math.floor(d / 3600) + "h") + " ago";
+          };
+          const short = n => n >= 1e3 ? (n / 1e3).toFixed(n >= 1e4 ? 0 : 1) + "k" : String(n);
+          const rrect = jl?._rrect ? (x, y, w, h, r) => jl._rrect(ctx, x, y, w, h, r) : (x, y, w, h, r) => {
+            ctx.beginPath(); ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+          };
+
+          const items = rows.map(b => {
+            const kill = "k" === b.t;
+            const it = {
+              accent: kill ? "#ee9299" : "c" === b.t ? "#9bbfea" : "t" === b.t ? "#78dcb3" : "#e9c778",
+              img: jl?._skinImage ? jl._skinImage(b.skin) : null,
+              who: fit(b.who, W),
+              mid: kill ? " defeated " : "c" === b.t ? " crafted " : "t" === b.t ? " tamed " : " claimed ",
+              what: fit(b.other + (b.est ? " (~" + short(b.est) + ")" : ""), kill ? W + 60 : 260),
+              gain: "+" + short(b.gain),
+              ago: ago(b.at)
+            };
+            it.lead = width(it.who) + width(it.mid) + width(it.what);
+            return it;
+          });
+
+          const maxOf = fn => items.reduce((m, it) => Math.max(m, fn(it)), 0);
+          const textX = items.some(it => it.img) ? ICON + 12 : 8;
+          const gainX = textX + maxOf(it => it.lead) + 12 + maxOf(it => width(it.gain));
+          const cardW = Math.ceil(gainX + 10 + maxOf(it => width(it.ago)) + 10);
+
+          let y = 0;
+          for (const it of items) {
+            ctx.fillStyle = "rgba(25,38,31,0.92)";
+            rrect(0, y, cardW, CARD_H, 10);
+            ctx.fill();
+            ctx.fillStyle = it.accent;
+            ctx.fillRect(0, y + 3, 3, CARD_H - 6);
+            if (it.img) { try { ctx.drawImage(it.img, 7, y + (CARD_H - ICON) / 2, ICON, ICON); } catch (e) {} }
+
+            ctx.fillStyle = "#f1f4f2";
+            ctx.fillText(it.who, textX, y + 14);
+            ctx.font = "12px Baloo Paaji";
+            ctx.fillStyle = it.accent;
+            ctx.fillText(it.mid.trim() + " " + it.what, textX, y + 32);
+            ctx.font = "16px Baloo Paaji";
+
+            ctx.textAlign = "right";
+            ctx.fillStyle = "#e9c778";
+            ctx.fillText(it.gain, gainX, y + CARD_H / 2);
+            ctx.fillStyle = "#9aa0a6";
+            ctx.fillText(it.ago, cardW - 10, y + CARD_H / 2);
+            ctx.textAlign = "left";
 
             y += CARD_H + GAP;
           }
@@ -21814,9 +22675,79 @@ ctx.drawImage(p.ldb_label, 187 + wuyX, yPos);
 
       // Спрайт для превью: шипы/двери/шипованные двери - мировые картинки из Feature_ColoredSpikes,
       // стены - иконка предмета, которую отдаёт игра (через Feature_ChestInfo).
-      _ghostSprite(item) {
+      // Стандартные (не скиновые) спрайты стен и шипов для превью в клипе - как в Show Spread у SpriteX:
+      // стены и шипы дерево..аметист рисуются на холсте по слоям, Reidite и шипованные двери - игровые картинки img/day-*.png.
+      // Для обычных дверей такого спрайта нет - вернётся null (дальше сработает запасной вариант в _ghostSprite).
+      _defaultSprite(item) {
+        if (!this._defSpr) {
+          const S = this._defSpr = {};
+          const TAU = 2 * Math.PI;
+          const paint = (c, f, st, lw) => { f && (c.fillStyle = f, c.fill()); st && (c.lineWidth = lw, c.strokeStyle = st, c.stroke()); };
+          const poly = (c, n, r, round) => {
+            const a = TAU / n, X = [], Y = [];
+            for (let i = 0; i < n; i++) { X[i] = Math.cos(i * a) * r; Y[i] = Math.sin(i * a) * r; }
+            c.beginPath();
+            c.moveTo(.5 * (X[n - 1] + X[0]), .5 * (Y[n - 1] + Y[0]));
+            for (let i = 0; i < n; i++) c.arcTo(X[i], Y[i], .5 * (X[i] + X[(i + 1) % n]), .5 * (Y[i] + Y[(i + 1) % n]), round);
+            c.closePath();
+          };
+          const layers = (c, sides, rot, L) => {
+            if (0 === sides) {
+              for (const l of L) { c.beginPath(); c.arc(0, 0, l[0], 0, TAU); c.closePath(); paint(c, l[1], l[2], l[3]); }
+            } else {
+              c.save(); c.rotate(rot[0]);
+              L.forEach((l, i) => { i > 0 && c.rotate(rot[i]); poly(c, sides, l[0], l[4] || 10); paint(c, l[1], l[2], l[3]); });
+              c.restore();
+            }
+          };
+          const mk = size => { const cv = document.createElement("canvas"); cv.width = cv.height = size; const c = cv.getContext("2d"); c.translate(size / 2, size / 2); return [cv, c]; };
+          const wall = (sides, rot, L) => { const [cv, c] = mk(130); layers(c, sides, rot, L); return cv; };
+          const spike = (sides, rot, sf, ss, L) => {
+            const [cv, c] = mk(170);
+            c.save();
+            for (let k = 0; k < 10; k++) { c.rotate(Math.PI / 5); c.save(); c.translate(65, 0); poly(c, 3, 21, 4); paint(c, sf, ss, 4); c.restore(); }
+            c.restore();
+            layers(c, sides, rot, L);
+            return cv;
+          };
+          const MAT = {
+            WOOD: [0, [0, 0, 0], [[60, "#4c3a15", "#634828", 4], [40, "#564021", null, 0], [25, "#634828", "#4c3a15", 8]], "#5f6061", "#939393"],
+            STONE: [7, [1.4, .64, .12], [[60, "#6a7570", "#939995", 4, 10], [40, "#9baaa3", "#adbcb5", 4, 10], [23, "#8a938e", null, 0, 5]], "#6a7570", "#939393"],
+            GOLD: [8, [1, .56, .28], [[60, "#877d36", "#a08f47", 4, 10], [40, "#a7983c", "#b29e4d", 4, 10], [28, "#c1b06b", null, 0, 8]], "#69685a", "#9c9683"],
+            DIAMOND: [9, [.2, -.32, .68], [[60, "#5cc5ce", "#89d1d4", 4, 10], [38, "#86d0d1", "#95d5d8", 4, 10], [20, "#e0f2f6", "#b3e0e3", 6, 8]], "#7d8b90", "#9facaa"],
+            AMETHYST: [7, [1.4, .64, .12], [[60, "#b15ecf", "#8c29aa", 4, 10], [40, "#c26de0", "#af59cd", 4, 10], [23, "#d588f1", null, 0, 5]], "#6a7570", "#939393"]
+          };
+          for (const [name, m] of Object.entries(MAT)) {
+            const wid = "WOOD" === name ? Items.WALL : Items[name + "_WALL"];
+            const sid = "WOOD" === name ? Items.SPIKE : Items[name + "_SPIKE"];
+            if (wid != null) S[wid] = wall(m[0], m[1], m[2]);
+            if (sid != null) S[sid] = spike(m[0], m[1], m[3], m[4], m[2]);
+          }
+          // Reidite и шипованные двери - готовые картинки игры
+          const img = src => { const i = new Image(); i.src = src; return i; };
+          S[Items.REIDITE_WALL] = img("img/day-reidite-wall.png");
+          S[Items.REIDITE_SPIKE] = img("img/day-reidite-spike.png");
+          for (const n of ["WOOD", "STONE", "GOLD", "DIAMOND", "AMETHYST", "REIDITE"]) {
+            const id = Items[n + "_DOOR_SPIKE"];
+            if (id != null) S[id] = img("img/day-" + n.toLowerCase() + "-spike-door.png");
+          }
+        }
+        const im = this._defSpr[item];
+        if (!im) return null;
+        const w = im.naturalWidth || im.width, h = im.naturalHeight || im.height;
+        if (!w || !h || (im.complete === false)) return null;
+        return { img: im, w, h, k: 170 === w ? 0.8 : 1 };
+      }
+
+      // defaultOnly = true: для клипа берём стандартную иконку предмета из игры, без скиновых картинок ColoredSpikes
+      _ghostSprite(item, defaultOnly) {
         const main = this.main;
         try {
+          if (defaultOnly) {
+            const d = this._defaultSprite(item);
+            if (d) return d;
+            throw 0;
+          }
           const cs = main.FeatureRegistry?.getInstance?.("coloredSpikes");
           const cand = cs?._imageMap?.[this._unitTypeOf(item)]?.[0];
           if (cand && cand.naturalWidth > 0 && (undefined === cand.tryLoad || 1 === cand.tryLoad())) {
@@ -21824,7 +22755,7 @@ ctx.drawImage(p.ldb_label, 187 + wuyX, yPos);
           }
         } catch (e) {}
         try {
-          if (Object.values(WALL_BY_MATERIAL).includes(item)) {
+          if (defaultOnly || Object.values(WALL_BY_MATERIAL).includes(item)) {
             const ci = main.FeatureRegistry?.getInstance?.("chestInfo");
             const icon = ci?.get_image?.((item + 1) << 1);
             if (icon && icon.complete && icon.naturalWidth > 0) {
@@ -22809,11 +23740,14 @@ class Feature_AutoBuild extends CheatFeatureBase {
       case "Repeat Last":
         itemId = Number.isInteger(this.lastBuilt) ? this.lastBuilt : false;
         break;
-      case "Wood Roofs": itemId = Items.ROOF; break;
+      case "Wood Roofs":
+      case "Roofs": itemId = Items.ROOF; break;
       case "Stone Roofs": itemId = Items.STONE_ROOF; break;
-      case "Wood Bridge": itemId = Items.BRIDGE; break;
+      case "Wood Bridge":
+      case "Bridge": itemId = Items.BRIDGE; break;
       case "Stone Bridge": itemId = Items.STONE_BRIDGE; break;
-      case "Plots": itemId = Items.PLOT; break;
+      case "Plots":
+      case "Plot": itemId = Items.PLOT; break;
     }
 
     if (itemId !== false && this.InventoryContains(itemId)) {
@@ -25509,7 +26443,7 @@ class Feature_AutoBuild extends CheatFeatureBase {
       // ---------- вебхук ----------
       _webhookBase() {
         const sm = this.main.SettingsManager;
-        const raw = String(sm?.get("roomWebhookUrl") || sm?.get("defenseWebhookUrl") || "").trim();
+        const raw = String(sm?.get("roomWebhookUrl") || "").trim();
         const m = /^https:\/\/(?:discord|discordapp)\.com\/api\/webhooks\/\d+\/[\w-]+/.exec(raw);
         return m ? m[0] : "";
       }
@@ -26839,7 +27773,7 @@ class Feature_AutoBuild extends CheatFeatureBase {
       }
 
       // ===== Двери: открыть перед собой, пройти, закрыть за собой =====
-      // Состояние двери: по умолчанию "открыта" = (u.info & 1) - так в этом файле считает Pathfinder/Defense.
+      // Состояние двери: по умолчанию "открыта" = (u.info & 1) - так в этом файле считает Pathfinder.
       // Если окажется иначе: window.arctDoorOpenMask = <маска>; window.arctDoorInvert = true (инверсия).
       // Дамп всех дверей рядом в консоль: arctDoorDump()
       static DOOR_REACH = 130;
@@ -31010,7 +31944,6 @@ class Feature_RenderingList extends CheatFeatureBase {
       Feature_EquipAfterPlace: () => Feature_EquipAfterPlace,
       Feature_AutoUnlock: () => Feature_AutoUnlock,
       Feature_InventoryLayout: () => Feature_InventoryLayout,
-      Feature_Defense: () => Feature_Defense,
       Feature_PutToChest: () => Feature_PutToChest,
       Feature_EnabledMods: () => Feature_EnabledMods,
       Feature_UnitDebugger: () => Feature_UnitDebugger,
@@ -31037,6 +31970,7 @@ class Feature_RenderingList extends CheatFeatureBase {
       Feature_QuestTimer: () => Feature_QuestTimer,
       Feature_FireInfo: () => Feature_FireInfo,
       Feature_JoinsLeaves: () => Feature_JoinsLeaves,
+      Feature_KillFeed: () => Feature_KillFeed,
       Feature_FakeDropWeapon: () => Feature_FakeDropWeapon,
       Feature_SmoothRoofs: () => Feature_SmoothRoofs,
       Feature_Xray: () => Feature_Xray,
@@ -31541,8 +32475,7 @@ for (const [e, n] of Object.entries(t)) {
             order: ["survivalPanel", "worldVehiclesPanel", "utilityPanel", "autoClickerPanel", "chestsPanel", "buildingPanel", "fillAreaPanel", "spectatorPanel", "translatorPanel", "roomReportPanel", "inventoryLayoutPanel", "putAmountsPanel"]
           },
           crafting: { flat: ["autoCraftPanel", "autoRecyclePanel"], order: ["autoCraftPanel", "autoRecyclePanel", "smartCraftPanel"] },
-          token: { flat: ["token"], order: [] },
-          defense: { flat: ["defenseDetectionPanel", "defenseAlertsPanel"], order: [] }
+          token: { flat: ["token"], order: [] }
         };
         const t = t => {
             const n = t.name.toUpperCase();
@@ -31633,7 +32566,6 @@ for (const [e, n] of Object.entries(t)) {
     ["Feature_MarketBinds", () => Feature_MarketBinds],
     ["Feature_ChestInfo", () => Feature_ChestInfo],
     ["Feature_PathFinder", () => Feature_PathFinder],
-    ["Feature_Defense", () => Feature_Defense],
     ["Feature_AutoBottle", () => Feature_AutoBottle],
     ["Feature_AutoTreasure", () => Feature_AutoTreasure],
     ["Feature_AutoSandworm", () => Feature_AutoSandworm],
@@ -31672,6 +32604,7 @@ for (const [e, n] of Object.entries(t)) {
     ["Feature_FireInfo", () => Feature_FireInfo],
     ["Feature_PutToChest", () => Feature_PutToChest],
     ["Feature_JoinsLeaves", () => Feature_JoinsLeaves],
+    ["Feature_KillFeed", () => Feature_KillFeed],
     ["Feature_SmoothRoofs", () => Feature_SmoothRoofs],
     ["Feature_Xray", () => Feature_Xray],
     ["Feature_BuildingInfo", () => Feature_BuildingInfo],
