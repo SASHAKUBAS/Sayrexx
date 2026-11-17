@@ -664,6 +664,13 @@
     WeaponsMap[Items.REIDITE_SPEAR] = 1, WeaponsMap[Items.CRAB_SPEAR] = 1, WeaponsMap[Items.AMETHYST_SPEAR] = 1, WeaponsMap[Items.DIAMOND_SPEAR] = 1, WeaponsMap[Items.GOLD_SPEAR] = 1, WeaponsMap[Items.STONE_SPEAR] = 1, WeaponsMap[Items.WOOD_SPEAR] = 1, WeaponsMap[Items.DRAGON_SPEAR] = 1, WeaponsMap[Items.LAVA_SPEAR] = 1, WeaponsMap[Items.COPPER_SPEAR] = 1, WeaponsMap[Items.IRON_SPEAR] = 1, WeaponsMap[Items.TOPAZ_SPEAR] = 1, WeaponsMap[Items.SAPPHIRE_SPEAR] = 1, WeaponsMap[Items.JADE_SPEAR] = 1, WeaponsMap[Items.RUBY_SPEAR] = 1, WeaponsMap[Items.COAL_SPEAR] = 1, WeaponsMap[Items.AQUAMARINE_SPEAR] = 1, WeaponsMap[Items.EMERALD_SPEAR] = 1, WeaponsMap[Items.WOOD_SWORD] = 1, WeaponsMap[Items.STONE_SWORD] = 1, WeaponsMap[Items.COPPER_SWORD] = 1, WeaponsMap[Items.IRON_SWORD] = 1, WeaponsMap[Items.GOLD_SWORD] = 1, WeaponsMap[Items.TOPAZ_SWORD] = 1, WeaponsMap[Items.DIAMOND_SWORD] = 1, WeaponsMap[Items.AMETHYST_SWORD] = 1, WeaponsMap[Items.REIDITE_SWORD] = 1, WeaponsMap[Items.PIRATE_SWORD] = 1, WeaponsMap[Items.SAPPHIRE_SWORD] = 1, WeaponsMap[Items.JADE_SWORD] = 1, WeaponsMap[Items.RUBY_SWORD] = 1, WeaponsMap[Items.COAL_SWORD] = 1, WeaponsMap[Items.AQUAMARINE_SWORD] = 1, WeaponsMap[Items.EMERALD_SWORD] = 1, WeaponsMap[Items.DRAGON_SWORD] = 1, WeaponsMap[Items.LAVA_SWORD] = 1, WeaponsMap[Items.EMERALD_AXE] = 1, WeaponsMap[Items.AQUAMARINE_AXE] = 1, WeaponsMap[Items.COAL_AXE] = 1, WeaponsMap[Items.RUBY_AXE] = 1, WeaponsMap[Items.JADE_AXE] = 1, WeaponsMap[Items.SAPPHIRE_AXE] = 1, WeaponsMap[Items.REIDITE_AXE] = 1, WeaponsMap[Items.AMETHYST_AXE] = 1, WeaponsMap[Items.DIAMOND_AXE] = 1, WeaponsMap[Items.TOPAZ_AXE] = 1, WeaponsMap[Items.GOLD_AXE] = 1, WeaponsMap[Items.IRON_AXE] = 1, WeaponsMap[Items.COPPER_AXE] = 1, WeaponsMap[Items.STONE_AXE] = 1, WeaponsMap[Items.WOOD_AXE] = 1;
     // Macro Drop: fixed list of droppable resources (chat: "drop" / "drop all" / "drop wood" ...)
     // emerald: the item table has no raw EMERALD entry, 245 (EMERALD_MACHINE) is used - change the id here if it is wrong
+    // 10000+ -> "10k" / "10.1k" (обрезаем вниз до 0.1k), меньше - просто число
+    function fmtResCount(n) {
+      n = Math.max(0, Math.floor(Number(n) || 0));
+      if (n < 10000) return String(n);
+      const k = Math.floor(n / 100) / 10;
+      return (k % 1 === 0 ? String(k) : k.toFixed(1)) + "k";
+    }
     const MACRO_DROP_ITEMS = [
       { name: "wood", id: 200, aliases: [] },
       { name: "stone", id: 199, aliases: [] },
@@ -2501,7 +2508,7 @@
             {
               title: "Misc",
               keys: [
-                "voiceAndChatEnabled", "autoRespawn", "autoTotem", "autoTame",
+                "voiceAndChatEnabled", "chatSound", "autoRespawn", "autoTotem", "autoTame",
                 "autoHat", "autoDiving", "autoLand", "equipAfterPlace",
                 "autoCrown", "autoBook", "autoIce", "autoIceMode", "smartOppositeKeys", "autoUnlock",
                                "lockAngle", "putToChest", "putToChestLabel", "putToFurnace", "furnaceWarning",
@@ -2516,7 +2523,7 @@
                 "autoTreasureCrown", "autoTreasureWarm", "autoTreasureWarmHat", "autoTreasureColdAt",
                 "autoTreasureDrink", "autoTreasureDrinkAt", "autoTreasureResumeAt",
                 "autoTreasureHpSafe", "autoTreasureHpAt", "autoTreasureHpResume",
-                "autoTreasureShowRoute", "autoTreasureShowBounds"
+                "autoTreasureShowRoute", "autoTreasureShowBounds", "autoTreasureLootReport"
               ]
             },
             {
@@ -2571,7 +2578,7 @@
             {
               title: "Auto Farm Settings",
               keys: [
-                "autoFarm", "autoFarmKey", "autoFarmDropEnabled", "autoFarmWhitelist",
+                "autoFarm", "autoFarmKey", "autoFarmDropEnabled", "farmReport", "autoFarmWhitelist",
                 "farmHpAt", "farmColdAt", "farmPriority", "farmUsePathfinding", "farmEnemyStop", "farmEnemyRange",
                 "farmEnemyTeamOk", "farmEnemyWhitelist",
                 "autoFarmSelect", "autoFarmHome", "autoPlant", "autoPlantKey",
@@ -3505,6 +3512,8 @@
         if (label === "Minimap Coords") return "Shows your current X / Y tile coordinates under the minimap.";
         if (label === "FPS Limit") return "Cap max frame rate (0 = Unlimited).";
         if (label === "Clip Quality") return "Performance = 720p/30fps, Balanced = 720p/60fps, Quality = 1080p/60fps.";
+        if (label === "Record As 100% Zoom") return "The clip is recorded as if your browser zoom were 100% (e.g. a real 3840x2160 window on a 4K screen): full interface, normal size. Your own screen is unchanged. Clip fps is capped at 30 while it is on. Applies to screenshots too.";
+        if (label === "Browser Zoom % (0 = auto)") return "Your current browser zoom for 'Record As 100% Zoom'. 0 = auto (works when Windows display scaling is 100%). If the clip looks wrong, set it by hand (e.g. 67).";
         if (label === "Auto Performance") return "Lowers the clip frame rate when the game starts to lag, and raises it back later.";
         if (label === "Show Placing In Clip") return "In the clip (and screenshots) the building preview appears around every Auto Spike / Auto Wall placement, like a manual place. Your screen is unchanged.";
         if (label === "Take Screenshot") return "Clean screenshot of the game (no script overlays, original skin). Saved to the Safe Clip list.";
@@ -4645,6 +4654,7 @@
 
                 // --- Б) ПЕРЕХВАТ СТРОИТЕЛЬНЫХ ПАКЕТОВ ARCT ---
                 if (
+                  packet[0] !== 39 &&
                   packet.length === 4 &&
                   typeof packet[1] === "number" &&
                   (
@@ -4666,6 +4676,7 @@
                 // --- В) ОПРЕДЕЛЕНИЕ ID ПАКЕТА КАМЕРЫ: ровно 3 числа [id, x, y], где x > 0 и y > 0 ---
                 if (
                   this._camPacketId === undefined &&
+                  packet[0] !== 39 &&
                   packet.length === 3 &&
                   typeof packet[0] === "number" &&
                   typeof packet[1] === "number" &&
@@ -6664,6 +6675,7 @@ GUI_TAB_MAIN = {
                 icon: "●",
                 settings: [
                   createToggle("voiceAndChatEnabled", "Chat"),
+                  { type: "checkbox", key: "chatSound", label: "Chat Notification Sound", defaultValue: true, tip: "Play a sound when a teammate message arrives (/t text in the game chat or the Squad Chat window)." },
                   createToggle("lockAngle", "Lock Angle")
                 ]
               },
@@ -6791,6 +6803,7 @@ GUI_TAB_MAIN = {
                   { type: "slider", key: "autoTreasureHpResume", label: "HP Resume %", min: 1, max: 100, defaultValue: 80 },
                   createToggle("autoTreasureShowRoute", "Show Route"),
                   createToggle("autoTreasureShowBounds", "Show Safe Point"),
+                  createToggle("autoTreasureLootReport", "Loot Report To Chat"),
                   { type: "toggle", key: "autoTreasureKeepStart", label: "Keep Starting Inventory", tip: "Items you had when Auto Treasure was turned on are never put into chests or recycled. Only what is collected afterwards is managed." },
                   { type: "toggle", key: "autoTreasureInvFull", label: "Full Inventory: Chest / Recycle", tip: "When the inventory is full: put items into the chest that already holds them, recycle other resources, keep items from the collect list that have no chest." },
                   { type: "toggle", key: "autoTreasureDoors", label: "Doors: open / close", tip: "Open your own closed doors on the way and close them behind you." },
@@ -7000,7 +7013,12 @@ GUI_TAB_MACRO = {
                   createToggle("macroStopOnWASD", "Stop On WASD"),
                   createToggle("macroSkipStuck", "Skip Point If Stuck"),
                   createToggle("macroSmoothAngles", "Smooth Angles"),
-                  createToggle("macroShowPath", "Show Path")
+                  createToggle("macroShowPath", "Show Path"),
+                  createToggle("macroEnemyStop", "Stop When Enemy Near"),
+                  { type: "slider", key: "macroEnemyRange", label: "Enemy Range", min: 100, max: 2000, defaultValue: 600 },
+                  createToggle("macroEnemyTeamOk", "Ignore Teammates"),
+                  { type: "text", key: "macroEnemyWhitelist", label: "Enemy Ignore (IDs or nicks, comma separated)", defaultValue: "" },
+                  createToggle("macroReport", "Macro Report To Chat (every 10s)")
                 ]
               },
               macroRecordPanel: {
@@ -7078,6 +7096,7 @@ GUI_TAB_FARMING = {
                   createButton("autoFarmSelect", "Select Farm Zone", (t, e) => e.FeatureRegistry.getInstance("AutoFarmRunner")?.["beginZoneSelect"]()),
                   createButton("autoFarmHome", "Set Farm Home", (t, e) => e.FeatureRegistry.getInstance("AutoFarmRunner")?.["setHome"]()),
                   createToggle("autoFarmDropEnabled", "Auto Farm Drop"),
+                  createToggle("farmReport", "Farm Report To Chat (every 10s)"),
                   { type: "text", key: "autoFarmWhitelist", label: "Drop Whitelist IDs (comma separated)", defaultValue: "" },
                   { type: "slider", key: "farmHpAt", label: "Safe Point Below HP %", min: 1, max: 100, defaultValue: 80 },
                   { type: "slider", key: "farmColdAt", label: "Safe Point Below Cold %", min: 0, max: 100, defaultValue: 10 },
@@ -7136,23 +7155,23 @@ GUI_TAB_FARMING = {
                 icon: "●",
                 settings: [
                   createDropdown("marketKeyMode", "Key Mode", ["Once Per Press", "Repeat While Held", "Toggle Repeat"]),
-                  { type: "slider", key: "marketRepeatMs", label: "Repeat Every (ms)", min: 200, max: 10000, defaultValue: 1000 },
-                  { type: "slider", key: "marketBerries", label: "Berries To Sell", min: 0, max: 100000 },
+                  { type: "slider", key: "marketRepeatMs", label: "Repeat Every (ms)", min: 200, max: 5000, defaultValue: 1000 },
+                  { type: "slider", key: "marketBerries", label: "Berries To Sell", min: 0, max: 10000 },
                   createButton("convertBerries", "Sell Berries", (t, e) => e.FeatureRegistry.getInstance("marketBinds")?.convert("convertBerries")),
                   createHotkey("convertBerriesKey", "Sell Berries Bind"),
-                  { type: "slider", key: "marketPumpkin", label: "Pumpkin To Sell", min: 0, max: 100000 },
+                  { type: "slider", key: "marketPumpkin", label: "Pumpkin To Sell", min: 0, max: 10000 },
                   createButton("convertPumpkin", "Sell Pumpkin", (t, e) => e.FeatureRegistry.getInstance("marketBinds")?.convert("convertPumpkin")),
                   createHotkey("convertPumpkinKey", "Sell Pumpkin Bind"),
-                  { type: "slider", key: "marketBread", label: "Bread To Sell", min: 0, max: 100000 },
+                  { type: "slider", key: "marketBread", label: "Bread To Sell", min: 0, max: 10000 },
                   createButton("convertBread", "Sell Bread", (t, e) => e.FeatureRegistry.getInstance("marketBinds")?.convert("convertBread")),
                   createHotkey("convertBreadKey", "Sell Bread Bind"),
-                  { type: "slider", key: "marketCarrot", label: "Carrot To Sell", min: 0, max: 100000 },
+                  { type: "slider", key: "marketCarrot", label: "Carrot To Sell", min: 0, max: 10000 },
                   createButton("convertCarrot", "Sell Carrot", (t, e) => e.FeatureRegistry.getInstance("marketBinds")?.convert("convertCarrot")),
                   createHotkey("convertCarrotKey", "Sell Carrot Bind"),
-                  { type: "slider", key: "marketTomato", label: "Tomato To Sell", min: 0, max: 100000 },
+                  { type: "slider", key: "marketTomato", label: "Tomato To Sell", min: 0, max: 10000 },
                   createButton("convertTomato", "Sell Tomato", (t, e) => e.FeatureRegistry.getInstance("marketBinds")?.convert("convertTomato")),
                   createHotkey("convertTomatoKey", "Sell Tomato Bind"),
-                  { type: "slider", key: "marketThornbush", label: "Thornbush To Sell", min: 0, max: 100000 },
+                  { type: "slider", key: "marketThornbush", label: "Thornbush To Sell", min: 0, max: 10000 },
                   createButton("convertThornbush", "Sell Thornbush", (t, e) => e.FeatureRegistry.getInstance("marketBinds")?.convert("convertThornbush")),
                   createHotkey("convertThornbushKey", "Sell Thornbush Bind")
                 ]
@@ -7393,6 +7412,22 @@ GUI_TAB_BINDS = {
             id: "binds",
             name: "Binds",
             panels: {
+              bindsTransfer: {
+                id: "bindsTransfer",
+                title: "Import / Export",
+                icon: "●",
+                settings: [
+                  { type: "text", key: "bindsImportText", label: "Paste Binds JSON", defaultValue: "" },
+                  createButton("bindsImportTextBtn", "Import From Text", t => t.importBindsText()),
+                  createButton("bindsImportFileBtn", "Import From File", t => {
+                    const e = Object.assign(document.createElement("input"), { type: "file", accept: ".json,application/json" });
+                    e.onchange = ({ target: e }) => { e.files[0] && t.importBindsFile(e.files[0]); };
+                    e.click();
+                  }),
+                  createButton("bindsExportFileBtn", "Export To File (.json)", t => t.saveBindsToFile()),
+                  createButton("bindsCopyBtn", "Copy Binds To Clipboard", t => t.copyBinds())
+                ]
+              },
               bindsPanel: {
                 id: "bindsPanel",
                 title: "Binds",
@@ -8394,6 +8429,8 @@ Token link: ${tokenLink}`;
                 createToggle("clipAutoPerf", "Auto Performance"),
                 createToggle("clipFakePlacing", "Show Placing In Clip"),
                 createToggle("clipOnlyPvp", "Only PVP"),
+                createToggle("clipZoom100", "Record As 100% Zoom"),
+                { type: "slider", key: "clipZoomPercent", label: "Browser Zoom % (0 = auto)", min: 0, max: 100, defaultValue: 0 },
                 createHotkey("clipToggleKey", "Start / Stop Clip Bind")
               ]
             },
@@ -8611,6 +8648,13 @@ GUI_CONFIG = {
         undefined === this.runtime.farmHpAt && (this.runtime.farmHpAt = 80);
         undefined === this.runtime.farmColdAt && (this.runtime.farmColdAt = 10);
         undefined === this.runtime.farmPriority && (this.runtime.farmPriority = "Nearest");
+        undefined === this.runtime.farmReport && (this.runtime.farmReport = false);
+        undefined === this.runtime.macroReport && (this.runtime.macroReport = false);
+        undefined === this.runtime.macroEnemyStop && (this.runtime.macroEnemyStop = false);
+        undefined === this.runtime.macroEnemyRange && (this.runtime.macroEnemyRange = 600);
+        undefined === this.runtime.macroEnemyTeamOk && (this.runtime.macroEnemyTeamOk = true);
+        undefined === this.runtime.macroEnemyWhitelist && (this.runtime.macroEnemyWhitelist = "");
+        undefined === this.runtime.autoTreasureLootReport && (this.runtime.autoTreasureLootReport = false);
         undefined === this.runtime.farmEnemyStop && (this.runtime.farmEnemyStop = false);
         undefined === this.runtime.farmEnemyRange && (this.runtime.farmEnemyRange = 600);
         undefined === this.runtime.farmEnemyTeamOk && (this.runtime.farmEnemyTeamOk = true);
@@ -8639,6 +8683,8 @@ GUI_CONFIG = {
         undefined === this.runtime.clipShotDownload && (this.runtime.clipShotDownload = true);
         undefined === this.runtime.clipFakePlacing && (this.runtime.clipFakePlacing = true);
         undefined === this.runtime.clipOnlyPvp && (this.runtime.clipOnlyPvp = false);
+        undefined === this.runtime.clipZoom100 && (this.runtime.clipZoom100 = false);
+        undefined === this.runtime.clipZoomPercent && (this.runtime.clipZoomPercent = 0);
         undefined === this.runtime.convertBerriesKey && (this.runtime.convertBerriesKey = "NONE");
         undefined === this.runtime.convertPumpkinKey && (this.runtime.convertPumpkinKey = "NONE");
         undefined === this.runtime.convertBreadKey && (this.runtime.convertBreadKey = "NONE");
@@ -8646,7 +8692,7 @@ GUI_CONFIG = {
         undefined === this.runtime.convertTomatoKey && (this.runtime.convertTomatoKey = "NONE");
         undefined === this.runtime.convertThornbushKey && (this.runtime.convertThornbushKey = "NONE");
         undefined === this.runtime.pathFinderX && (this.runtime.pathFinderX = "-1");
-        undefined === this.runtime.pathFinderY && (this.runtime.pathFinderY = "-1"); undefined === this.runtime.guiMovable && (this.runtime.guiMovable = false), undefined === this.runtime.putToChest && (this.runtime.putToChest = 10); undefined === this.runtime.putToChestLabel && (this.runtime.putToChestLabel = true);undefined === this.runtime.putToFurnace && (this.runtime.putToFurnace = 255); undefined === this.runtime.guiResizable && (this.runtime.guiResizable = false),undefined === this.runtime.randomNick && (this.runtime.randomNick = false), undefined === this.runtime.guiPosX && (this.runtime.guiPosX = null), undefined === this.runtime.guiPosY && (this.runtime.guiPosY = null), undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null), undefined === this.runtime.guiSidebarWidth && (this.runtime.guiSidebarWidth = null),undefined === this.runtime.guiColor && (this.runtime.guiColor = "#3b82f6"); undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null),undefined === this.runtime.leaderboardAllies && (this.runtime.leaderboardAllies = true), undefined === this.runtime.guiHeight && (this.runtime.guiHeight = null), undefined === this.runtime.guiFontSize && (this.runtime.guiFontSize = null),undefined === this.runtime.playerRadar && (this.runtime.playerRadar = true),undefined === this.runtime.unitDebugger && (this.runtime.unitDebugger = "None"); undefined === this.runtime.autoIceMode && (this.runtime.autoIceMode = "Heal"); undefined === this.runtime.extractorFuel && (this.runtime.extractorFuel = "Wood"); undefined === this.runtime.guiOpacity && (this.runtime.guiOpacity = 100); undefined === this.runtime.guiButton && (this.runtime.guiButton = true);
+        undefined === this.runtime.pathFinderY && (this.runtime.pathFinderY = "-1"); undefined === this.runtime.guiMovable && (this.runtime.guiMovable = false), undefined === this.runtime.putToChest && (this.runtime.putToChest = 10); undefined === this.runtime.putToChestLabel && (this.runtime.putToChestLabel = true); undefined === this.runtime.chatSound && (this.runtime.chatSound = true);undefined === this.runtime.putToFurnace && (this.runtime.putToFurnace = 255); undefined === this.runtime.guiResizable && (this.runtime.guiResizable = false),undefined === this.runtime.randomNick && (this.runtime.randomNick = false), undefined === this.runtime.guiPosX && (this.runtime.guiPosX = null), undefined === this.runtime.guiPosY && (this.runtime.guiPosY = null), undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null), undefined === this.runtime.guiSidebarWidth && (this.runtime.guiSidebarWidth = null),undefined === this.runtime.guiColor && (this.runtime.guiColor = "#3b82f6"); undefined === this.runtime.guiWidth && (this.runtime.guiWidth = null),undefined === this.runtime.leaderboardAllies && (this.runtime.leaderboardAllies = true), undefined === this.runtime.guiHeight && (this.runtime.guiHeight = null), undefined === this.runtime.guiFontSize && (this.runtime.guiFontSize = null),undefined === this.runtime.playerRadar && (this.runtime.playerRadar = true),undefined === this.runtime.unitDebugger && (this.runtime.unitDebugger = "None"); undefined === this.runtime.autoIceMode && (this.runtime.autoIceMode = "Heal"); undefined === this.runtime.extractorFuel && (this.runtime.extractorFuel = "Wood"); undefined === this.runtime.guiOpacity && (this.runtime.guiOpacity = 100); undefined === this.runtime.guiButton && (this.runtime.guiButton = true);
         for (const e of ["farmTLX", "farmTLY", "farmBRX", "farmBRY", "farmSX", "farmSY", "totemX", "totemY", "deathX", "deathY"]) {
           undefined === this.runtime[e] && (this.runtime[e] = 0);
         }
@@ -8655,6 +8701,7 @@ GUI_CONFIG = {
           undefined === this.runtime[e] && (this.runtime[e] = 0);
         }
         undefined === this.runtime.marketKeyMode && (this.runtime.marketKeyMode = "Once Per Press");
+        undefined === this.runtime.bindsImportText && (this.runtime.bindsImportText = "");
         undefined === this.runtime.marketRepeatMs && (this.runtime.marketRepeatMs = 1000);
 
 
@@ -8690,6 +8737,91 @@ GUI_CONFIG = {
       }
       subscribe(e, n) {
         return EventEmitter.subscribe("setting:" + String(e) + "", n);
+      }
+      // ---------- Binds: импорт / экспорт ВСЕХ биндов скрипта ----------
+      // Бинды = все hotkey-настройки из GUI + бинды фич + любые сохранённые настройки вида *Key со значением-клавишей
+      _bindKeys() {
+        const keys = new Set();
+        const walk = o => {
+          if (!o || "object" !== typeof o) return;
+          if (Array.isArray(o)) { o.forEach(walk); return; }
+          if ("hotkey" === o.type && "string" === typeof o.key) keys.add(o.key);
+          for (const k of Object.keys(o)) { const v = o[k]; v && "object" === typeof v && walk(v); }
+        };
+        try { walk(GUI_CONFIG.sections); } catch (e) {}
+        try {
+          for (const f of this.main.FeatureRegistry.getAllInstances()) {
+            if (null != f.constructor.bindType) keys.add(f.getBindSettingsKey());
+          }
+        } catch (e) {}
+        const looksLikeKey = v => null === v || ("string" === typeof v && /^(Key[A-Z]|Digit\d|Numpad|F\d{1,2}$|Arrow|Shift|Control|Alt|Meta|Space|Tab|Enter|Backspace|Escape|Insert|Delete|Home|End|Page|Backquote|Minus|Equal|Bracket|Backslash|Semicolon|Quote|Comma|Period|Slash|Mouse|NONE$)/.test(v));
+        for (const k of Object.keys(this.runtime)) {
+          if (/Key$/.test(k) && looksLikeKey(this.runtime[k])) keys.add(k);
+        }
+        return [...keys].filter(k => k in this.runtime);
+      }
+      exportBinds() {
+        const binds = {};
+        for (const k of this._bindKeys().sort()) binds[k] = this.runtime[k] ?? null;
+        return { type: "arct-binds", version: 1, count: Object.keys(binds).length, binds };
+      }
+      _bindsToast(msg) {
+        try { ArctInGameUI.toast("Binds", msg, "info"); return; } catch (e) {}
+        try { this.main.gui?.notify("Binds", msg, "info"); } catch (e) {}
+      }
+      saveBindsToFile() {
+        const blob = new Blob([JSON.stringify(this.exportBinds(), null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        Object.assign(document.createElement("a"), { href: url, download: "arct_binds_" + String(Date.now()) + ".json" }).click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        this._bindsToast("Binds exported (" + this.exportBinds().count + ").");
+      }
+      copyBinds() {
+        const text = JSON.stringify(this.exportBinds(), null, 2);
+        const done = () => this._bindsToast("Binds copied to clipboard.");
+        const fallback = () => {
+          const ta = Object.assign(document.createElement("textarea"), { value: text });
+          ta.style.cssText = "position:fixed;opacity:0;left:-9999px";
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand("copy"); done(); } catch (e) { this._bindsToast("Copy failed - use Export To File."); }
+          ta.remove();
+        };
+        try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+      }
+      // Принимает {type:"arct-binds", binds:{...}} или просто {ключ: клавиша}; применяются только известные бинды
+      applyBinds(data) {
+        const src = data && "object" === typeof data && data.binds && "object" === typeof data.binds ? data.binds : data;
+        if (!src || "object" !== typeof src || Array.isArray(src)) return -1;
+        const known = new Set(this._bindKeys());
+        let n = 0;
+        for (const [k, v] of Object.entries(src)) {
+          if (!known.has(k)) continue;
+          if (null !== v && "string" !== typeof v) continue;
+          if (this.runtime[k] !== v) { this.set(k, v); }
+          n++;
+        }
+        window.dispatchEvent(new CustomEvent("settings:reloaded"));
+        return n;
+      }
+      importBindsText() {
+        const raw = String(this.get("bindsImportText") ?? "").trim();
+        if (!raw) return this._bindsToast("Paste the binds JSON into the field first.");
+        let data;
+        try { data = JSON.parse(raw); } catch (e) { return this._bindsToast("That is not valid JSON."); }
+        const n = this.applyBinds(data);
+        if (n < 0) return this._bindsToast("Unknown binds format.");
+        this.set("bindsImportText", "");
+        this._bindsToast("Imported " + n + " binds.");
+      }
+      importBindsFile(file) {
+        const r = new FileReader();
+        r.onload = ({ target: t }) => {
+          let data;
+          try { data = JSON.parse(t.result); } catch (e) { return this._bindsToast("That file is not valid JSON."); }
+          const n = this.applyBinds(data);
+          this._bindsToast(n < 0 ? "Unknown binds format." : "Imported " + n + " binds.");
+        };
+        r.readAsText(file);
       }
       saveToFile() {
         const t = this.getSettings(),
@@ -10102,6 +10234,8 @@ class Feature_DaysAlive extends CheatFeatureBase {
         this._bitrate = p.bitrate;
         let idx = L.indexOf(p.fps);
         if (idx < 0) idx = 0;
+        // виртуальный ресайз игры дорогой: при Record As 100% Zoom клип не чаще 30 fps
+        if (idx < 1 && this._vzFactor() < 1) idx = Math.max(1, L.indexOf(30));
         this._minLevel = idx;
         this._level = idx;
         this._cleanIntervalMs = 1000 / L[idx];
@@ -10248,6 +10382,87 @@ class Feature_DaysAlive extends CheatFeatureBase {
           }
         }
         snap.length = 0;
+      }
+
+      // Record As 100% Zoom: играешь на уменьшенном зуме браузера (например 67%), а клип должен выглядеть так,
+      // как при зуме 100% (для 4K это окно 3840x2160 css-пикселей): весь интерфейс на месте и нормального размера.
+      // Для чистого прохода записи мы по-настоящему "ресайзим" игру в виртуальное окно: на время подменяем
+      // innerWidth/innerHeight, devicePixelRatio и clientWidth/clientHeight и вызываем штатный onresize игры
+      // (он пересчитывает холст, камеру и раскладку интерфейса). Физический размер холста при этом тот же.
+      // После снятия кадра всё возвращается и onresize вызывается ещё раз - твой экран остаётся как был.
+      // Зум: слайдер, а при 0 берём devicePixelRatio (верно, если масштаб Windows 100%).
+      _vzFactor() {
+        if (!this._setting("clipZoom100", false)) return 1;
+        if (typeof this.main.onresize !== "function") return 1;
+        let z = Number(this._setting("clipZoomPercent", 0)) / 100;
+        if (!(z > 0)) z = window.devicePixelRatio || 1;
+        if (!Number.isFinite(z) || z >= 0.98) return 1;
+        return Math.max(0.25, z);
+      }
+
+      _vzBegin(gameCanvas, ctx) {
+        let st = null;
+        try {
+          const z = this._vzFactor();
+          if (z >= 1 || !gameCanvas) return null;
+          const Wc = window.innerWidth, Hc = window.innerHeight;
+          const Wv = Math.max(320, Math.round(Wc * z)), Hv = Math.max(240, Math.round(Hc * z));
+          // devicePixelRatio виртуального окна подбираем так, чтобы холст остался того же физического размера
+          const rv = gameCanvas.width / Wv;
+          const bs = (ctx && (ctx.webkitBackingStorePixelRatio || ctx.backingStorePixelRatio)) || 1;
+          const sv = parseFloat(document.getElementById("input_ratio")?.value);
+          const dprV = sv && sv !== -1 ? rv * bs / sv : rv * bs;
+          const de = document.documentElement;
+          const cam = this.main.user?.cam || null;
+          st = {
+            dW: Object.getOwnPropertyDescriptor(window, "innerWidth"),
+            dH: Object.getOwnPropertyDescriptor(window, "innerHeight"),
+            dD: Object.getOwnPropertyDescriptor(window, "devicePixelRatio"),
+            cam, cx: cam ? cam.x : 0, cy: cam ? cam.y : 0
+          };
+          Object.defineProperty(window, "innerWidth", { configurable: true, get: () => Wv });
+          Object.defineProperty(window, "innerHeight", { configurable: true, get: () => Hv });
+          Object.defineProperty(window, "devicePixelRatio", { configurable: true, get: () => dprV });
+          Object.defineProperty(de, "clientWidth", { configurable: true, get: () => Wv });
+          Object.defineProperty(de, "clientHeight", { configurable: true, get: () => Hv });
+          this._vzRelayout();
+          // камера: экранная позиция = cam.x + мировая, центр окна сместился
+          if (cam && typeof cam.x === "number") cam.x += (Wv - Wc) / 2;
+          if (cam && typeof cam.y === "number") cam.y += (Hv - Hc) / 2;
+          return st;
+        } catch (e) {
+          this._warn("100% zoom begin failed", e);
+          if (st) this._vzEnd(st);
+          return null;
+        }
+      }
+
+      // Пересчёт раскладки: штатный onresize мода + собственный window.onresize игры и update_UI
+      // (именно они пересчитывают масштаб и позиции интерфейса: хотбар, полоски, миникарта, лидерборд)
+      _vzRelayout() {
+        try { this.main.onresize(); } catch (e) {}
+        try { if (typeof window.onresize === "function") window.onresize(); } catch (e) {}
+        try {
+          const g = this.main.game;
+          if (typeof g?.update_UI === "function") g.update_UI();
+        } catch (e) {}
+        try { this.main.onresize(); } catch (e) {}
+      }
+
+      _vzEnd(st) {
+        if (!st) return;
+        try {
+          const de = document.documentElement;
+          if (st.dW) Object.defineProperty(window, "innerWidth", st.dW); else delete window.innerWidth;
+          if (st.dH) Object.defineProperty(window, "innerHeight", st.dH); else delete window.innerHeight;
+          if (st.dD) Object.defineProperty(window, "devicePixelRatio", st.dD); else delete window.devicePixelRatio;
+          delete de.clientWidth;
+          delete de.clientHeight;
+        } catch (e) {}
+        try { this._vzRelayout(); } catch (e) {}
+        try {
+          if (st.cam) { st.cam.x = st.cx; st.cam.y = st.cy; }
+        } catch (e) {}
       }
 
       // Кадр клипа (в _cleanCanvas) + отметка времени для сторожа
@@ -10401,8 +10616,17 @@ class Feature_DaysAlive extends CheatFeatureBase {
         if (this._fpItem < 0) return -1;
         const craft = this.main.user?.["craft"];
         if (!craft || craft.crafting) return -1;
-        // если игрок уже выбрал здание сам (или Hidden-режим выбрал его в превью), игра рисует превью без нас
-        if (typeof craft.preview === "number" && craft.preview >= 0) return -1;
+        // если игрок уже выбрал здание сам (или Hidden-режим выбрал его в превью), игра рисует превью без нас.
+        // Но только если это реально постройка: до первой постановки preview может держать посторонний id
+        // (не здание), и из-за него призрак не рисовался, пока что-нибудь не поставишь.
+        const pv = craft.preview;
+        if (typeof pv === "number" && pv >= 0) {
+          if (pv === this._fpItem) return -1;
+          const sp = this.main.FeatureRegistry?.getInstance?.("autoSpike");
+          let building = false;
+          try { building = !!(sp?._defaultSprite?.(pv) || sp?._unitTypeOf?.(pv) != null); } catch (e) {}
+          if (building) return -1;
+        }
         return this._fpItem;
       }
 
@@ -10608,8 +10832,10 @@ class Feature_DaysAlive extends CheatFeatureBase {
             self.main._renderingCleanFrame = true;
             let res;
             let ok = false;
+            let vz = null;
             try {
               try { sc && sc.applySkinChanger(); } catch (e) {}
+              vz = self._vzBegin(gameCanvas, ctx);
               res = nativeDrawScene(...args);
               if (fp >= 0) self._drawClipPreview(fp);
               if (nativeDrawUI) {
@@ -10623,6 +10849,7 @@ class Feature_DaysAlive extends CheatFeatureBase {
             } catch (e) {
               self._fail("scene pass", e);
             } finally {
+              self._vzEnd(vz);
               try { self._restore(); } catch (e) { self._snap.length = 0; }
               self.main.hidden = prevHidden;
               // флаг _renderingCleanFrame снимаем ПОСЛЕ applySkinChanger: _restore() вернул в юнит подменённый скин,
@@ -10687,7 +10914,9 @@ class Feature_DaysAlive extends CheatFeatureBase {
                 // превью постройки может рисоваться вместе со сценой, поэтому для него сцену тоже перерисовываем
                 // (призрак постройки теперь рисуется поверх уже готовой сцены, поэтому из-за него сцену больше не перерисовываем -
                 // при долго зажатом Auto Spike это был бы лишний полный рендер на каждом кадре клипа)
-                const redrawScene = !!(sc && backedUp && nativeDrawScene && !self._noSceneRedraw);
+                const vzOn = !!(backedUp && nativeDrawScene && !self._noSceneRedraw && self._vzFactor() < 1);
+                const redrawScene = !!((sc || vzOn) && backedUp && nativeDrawScene && !self._noSceneRedraw);
+                let vz = null;
                 if (redrawScene) {
                   try { self._snapshot(); } catch (e) { self._snap.length = 0; self._warn("state snapshot failed", e); }
                 }
@@ -10698,6 +10927,7 @@ class Feature_DaysAlive extends CheatFeatureBase {
                 let res;
                 try {
                   try { sc && sc.applySkinChanger(); } catch (e) {}
+                  if (vzOn) vz = self._vzBegin(gameCanvas, self._gameCtx(gameCanvas));
                   if (redrawScene) {
                     try {
                       nativeDrawScene();
@@ -10716,6 +10946,7 @@ class Feature_DaysAlive extends CheatFeatureBase {
                 } catch (e) {
                   self._fail("ui pass", e);
                 } finally {
+                  self._vzEnd(vz);
                   try { self._restore(); } catch (e) { self._snap.length = 0; }
                   self.main.hidden = prevHidden;
                   try { sc && sc.applySkinChanger(); } catch (e) {}
@@ -11684,6 +11915,8 @@ class Feature_DaysAlive extends CheatFeatureBase {
       constructor(t) {
         super(t);
         this._audioContext = null;
+        this._lastSoundAt = 0;
+        this._toastBox = null;
       }
 
       setEnabled(t) {
@@ -11716,8 +11949,10 @@ class Feature_DaysAlive extends CheatFeatureBase {
       init() {
         super.init();
         this._injectStyles();
+        this._injectToastStyles();
         this._createUI();
         this._hookWebSocketMessages();
+        this._hookGameChat();
 
         setTimeout(() => {
           const isEn = this.main.SettingsManager?.get("voiceAndChatEnabled") ?? false;
@@ -11732,6 +11967,10 @@ class Feature_DaysAlive extends CheatFeatureBase {
 
       _playNotificationSound() {
         try {
+          if (this.main.SettingsManager?.get("chatSound") === false) return;
+          const nowT = Date.now();
+          if (nowT - this._lastSoundAt < 400) return;
+          this._lastSoundAt = nowT;
           if (!this._audioContext) {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             this._audioContext = new AudioContext();
@@ -11920,8 +12159,11 @@ class Feature_DaysAlive extends CheatFeatureBase {
               try {
                 const data = JSON.parse(event.data);
                 if (data.type === "squad_chat") {
-                  this._appendMessage(data.name || "Squad", data.text);
-                  // Проигрываем звуковой сигнал уведомления
+                  const nm = String(data.name || "Squad").slice(0, 16);
+                  const tx = String(data.text == null ? "" : data.text).slice(0, 200);
+                  this._appendMessage(nm, tx);
+                  this._showToast(nm, tx, false);
+                  // Проигрываем звуковой сигнал уведомления (выключается чекбоксом chatSound)
                   this._playNotificationSound();
                 }
               } catch (e) {}
@@ -11937,7 +12179,148 @@ class Feature_DaysAlive extends CheatFeatureBase {
         div.className = "arct-vc-msg";
         div.innerHTML = `<b>${escapeHtml(sender)}:</b> ${escapeHtml(text)}`;
         box.appendChild(div);
+        while (box.children.length > 200) box.firstChild.remove();
         box.scrollTop = box.scrollHeight;
+      }
+
+      // ---- быстрый чат: "/t текст" в игровом чате ----
+
+      _injectToastStyles() {
+        if (document.getElementById("arct-qc-styles")) return;
+        const style = document.createElement("style");
+        style.id = "arct-qc-styles";
+        style.textContent = `
+          #arct-qc-toasts {
+            position: fixed !important; left: 20px !important; bottom: 20px !important;
+            z-index: 99999998 !important; display: flex !important; flex-direction: column !important;
+            gap: 6px !important; pointer-events: none !important; max-width: 340px !important;
+            font-family: 'Baloo Paaji', cursive, sans-serif !important;
+          }
+          .arct-qc-toast {
+            background: rgba(11, 14, 20, 0.88) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-left: 3px solid #3b82f6 !important; color: #e2e8f0 !important; padding: 6px 10px !important;
+            border-radius: 6px !important; font-size: 13px !important; word-break: break-word !important;
+            transition: opacity 0.4s, transform 0.4s !important;
+          }
+          .arct-qc-toast b { color: #3b82f6 !important; }
+          .arct-qc-toast.warn { border-left-color: #ef4444 !important; }
+          .arct-qc-toast.out { opacity: 0 !important; transform: translateX(-12px) !important; }
+        `;
+        document.head.appendChild(style);
+      }
+
+      // Перехват исходящего пакета чата игры: [id, "текст"]. Сообщения "/t ..." не уходят в публичный чат.
+      _hookGameChat() {
+        const self = this;
+        // 1) DOM: ловим Enter в поле игрового чата раньше остальных скриптов, очищаем поле -> в игру ничего не уходит
+        if (!this._qcDomHooked) {
+          this._qcDomHooked = true;
+          window.addEventListener("keydown", e => {
+            try {
+              if (e.key !== "Enter" || e.__arctReplay) return;
+              const el = e.target;
+              if (!el || (el.tagName !== "INPUT" && el.tagName !== "TEXTAREA")) return;
+              if (el.closest && el.closest("[id^='arct'], [class*='arct'], #azon-gui-container")) return;
+              const m = /^\s*\/[tTеЕ]\s+([\s\S]+)$/.exec(String(el.value || ""));
+              if (!m) return;
+              const text = m[1].trim();
+              el.value = "";
+              try { el.dispatchEvent(new Event("input", { bubbles: true })); } catch (_) {}
+              if (text) self._quickSend(text);
+            } catch (err) {}
+          }, true);
+        }
+        // 2) ws.send: наша обёртка всегда должна быть САМОЙ ВНЕШНЕЙ (другие фичи тоже оборачивают send
+        //    и, если они снаружи, их запасные отправки идут мимо нас) - поэтому перевешиваем её, когда её накрыли
+        CustomTimer.setInterval(() => {
+          try {
+            const ws = self.main.client?.["socket"];
+            if (!ws || typeof ws.send !== "function" || ws.send === ws.__arctQCSend) return;
+            const prevSend = ws.send;
+            const wrapper = function (data) {
+              try { if (self._interceptQuickChat(data)) return; } catch (e) {}
+              return prevSend.apply(this, arguments);
+            };
+            ws.__arctQCSend = wrapper;
+            ws.send = wrapper;
+          } catch (e) {}
+        }, 100);
+      }
+
+      // запоминаем опкод игрового чата, чтобы другие репорты знали, каким пакетом писать в чат
+      _shareChatOp(op) {
+        try {
+          window.__arctChatOp = op;
+          const fr = this.main.FeatureRegistry?.getInstance?.("farmReport");
+          if (fr && !Number.isInteger(fr._op)) fr._op = op;
+          const tr = this.main.FeatureRegistry?.getInstance?.("translateReceived");
+          if (tr && !Number.isInteger(tr._outOp)) tr._outOp = op;
+        } catch (e) {}
+      }
+
+      _interceptQuickChat(data) {
+        if (typeof data !== "string" || data.charCodeAt(0) !== 91 || data.length > 400) return false;
+        let p;
+        try { p = JSON.parse(data); } catch (e) { return false; }
+        if (!Array.isArray(p) || p.length !== 2 || !Number.isInteger(p[0]) || typeof p[1] !== "string") return false;
+        // "/t" и "/е" (русская раскладка на той же клавише)
+        const m = /^\/[tTеЕ]\s+([\s\S]+)$/.exec(p[1].trim());
+        if (!m) return false;
+        this._shareChatOp(p[0]);
+        this._quickSend(m[1].trim());
+        return true;
+      }
+
+      _sendSquad(text) {
+        const mf = this.main.FeatureRegistry?.getInstance?.("mapMarkers");
+        const ws = mf && mf._radarWs;
+        if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+        try { ws.send(JSON.stringify({ type: "squad_chat", text })); return true; } catch (e) { return false; }
+      }
+
+      _quickSend(text) {
+        text = String(text || "").trim().slice(0, 200);
+        if (!text) return;
+        const nowT = Date.now();
+        if (this._qcLast && this._qcLast.text === text && nowT - this._qcLast.at < 600) return;
+        this._qcLast = { text, at: nowT };
+        const ok = this._sendSquad(text);
+        try {
+          const c = console.context && console.context("arct-qchat");
+          c && c.log("[ARCT-QCHAT] /t -> squad " + (ok ? "sent" : "NOT sent (radar offline)") + ": " + text);
+        } catch (e) {}
+        this._appendMessage("You", ok ? text : text + " (not sent)");
+        this._showToast("You", ok ? text : text + " (not sent: radar offline)", !ok);
+        if (!ok) {
+          try { const lg = console.context && console.context("arct-qchat"); lg && lg.log("quick chat not sent: radar socket is not open"); } catch (e) {}
+        }
+      }
+
+      // Уведомление в левом нижнем углу; если окно Squad Chat открыто, сообщения и так видны в нём
+      _showToast(name, text, warn) {
+        try {
+          const win = document.getElementById("arct-vc-window");
+          if (win && !win.classList.contains("hidden")) return;
+          let box = this._toastBox;
+          if (!box || !box.isConnected) {
+            box = document.createElement("div");
+            box.id = "arct-qc-toasts";
+            document.body.appendChild(box);
+            this._toastBox = box;
+          }
+          const el = document.createElement("div");
+          el.className = "arct-qc-toast" + (warn ? " warn" : "");
+          const b = document.createElement("b");
+          b.textContent = name + ":";
+          el.appendChild(b);
+          el.appendChild(document.createTextNode(" " + text));
+          box.appendChild(el);
+          while (box.children.length > 5) box.firstChild.remove();
+          setTimeout(() => {
+            el.classList.add("out");
+            setTimeout(() => el.remove(), 400);
+          }, 7000);
+        } catch (e) {}
       }
     }
 function escapeHtml(str) {
@@ -15601,7 +15984,7 @@ class Feature_MarketBinds extends CheatFeatureBase {
       }
 
       _ms() {
-        return Math.max(200, Math.min(1e4, Number(this.main.SettingsManager?.get("marketRepeatMs")) || 1e3));
+        return Math.max(200, Math.min(5e3, Number(this.main.SettingsManager?.get("marketRepeatMs")) || 1e3));
       }
 
       // Объект рынка игры: { open, list, version, select, show, refresh }
@@ -15664,9 +16047,10 @@ class Feature_MarketBinds extends CheatFeatureBase {
           const s = f.toString();
           if (s.length > 400 || s.indexOf("stringify") < 0) continue;
           const m = s.match(re);
-          if (m && num(m[1]) === num(m[2]) && num(m[1]) === 39) found.push(k);
+          if (m && num(m[1]) === num(m[2])) found.push([k, num(m[1])]);
         }
-        if (found.length === 1) { this._bfKey = found[0]; return c[found[0]]; }
+        const hit = found.length === 1 ? found[0] : found.find(e => e[1] === 39);
+        if (hit) { this._bfKey = hit[0]; return c[hit[0]]; }
         return null;
       }
 
@@ -15700,7 +16084,7 @@ class Feature_MarketBinds extends CheatFeatureBase {
             it.left -= c;
             if (it.left <= 0) this._q.shift();
           }
-          if (this._q.length) this._qt = setTimeout(() => this._pump(), 250);
+          if (this._q.length) this._qt = CustomTimer.setTimeout(() => this._pump(), 250);
         } else this._q = [];
       }
 
@@ -15731,7 +16115,7 @@ class Feature_MarketBinds extends CheatFeatureBase {
         if (this._timers[name]) return;
         const label = MARKET_TRADES[name].label;
         if (this.sell(name, false)) {
-          this._timers[name] = setInterval(() => {
+          this._timers[name] = CustomTimer.setInterval(() => {
             this._queueBusy() || this.sell(name, true) || this._stop(name, `Stopped selling ${label}: none left, or no market here.`);
           }, this._ms());
         }
@@ -15739,7 +16123,7 @@ class Feature_MarketBinds extends CheatFeatureBase {
 
       _stop(name, msg) {
         if (this._timers[name]) {
-          clearInterval(this._timers[name]);
+          CustomTimer.clearInterval(this._timers[name]);
           delete this._timers[name];
           if (msg) this._say(msg);
         }
@@ -19814,7 +20198,7 @@ class Feature_JoinsLeaves extends CheatFeatureBase {
           offered: null,        // индексы квестов, которые предлагает сервер
           offeredAt: 0
         };
-        // Бонусы крафта сервера (PW в SpriteX): item -> bonus / time
+        // Бонусы крафта сервера (PW в SpriteX): item -> bonus / time. Заполняются только из handshake (pkt[25])
         this.PW = { bonus: new Map(), time: new Map() };
         this._bonusFromServer = false;
         this.SCORE_MIN = 3e3;                    // $W
@@ -19855,24 +20239,6 @@ class Feature_JoinsLeaves extends CheatFeatureBase {
         this._aliveMap = new Map();  // pid -> имя живого игрока (для запасного детектора смерти)
         this._deadAt = new Map();    // pid -> время последней зарегистрированной смерти (дедупликация хук + скан)
         this._dbgAt = 0;
-        this._seedBonus();
-      }
-
-      // Запасные значения бонусов из recipes (пока не пришёл handshake): item -> bonus (только bonus > 0)
-      _seedBonus() {
-        const seed = [
-          [164, 200, 20], [163, 200, 20], [165, 200, 20], [166, 200, 20], [228, 20, 15], [331, 5, 5],
-          [61, 387, 80], [19, 657, 90], [110, 659, 90], [367, 50, 7], [119, 10, 5],
-          [183, 16, 5], [184, 26, 5], [185, 50, 10], [186, 62, 10], [187, 79, 15], [188, 200, 15], [189, 1058, 20],
-          [135, 5, 5], [136, 5, 10], [62, 30, 15], [63, 70, 20], [64, 331, 30], [65, 411, 60], [66, 607, 90],
-          [72, 4007, 90], [46, 50, 10], [283, 20, 5], [85, 1, 1], [282, 20, 1],
-          [154, 1360, 40], [33, 610, 30], [155, 8980, 60], [71, 569, 80], [37, 896, 90],
-          [333, 350, 60], [363, 1e3, 60], [364, 1e3, 60], [365, 1e3, 60], [366, 1e3, 60]
-        ];
-        for (const [item, bonus, time] of seed) {
-          this.PW.bonus.set(item, bonus);
-          this.PW.time.set(item, time);
-        }
       }
 
       init() {
@@ -22744,9 +23110,7 @@ ctx.drawImage(p.ldb_label, 187 + wuyX, yPos);
         const main = this.main;
         try {
           if (defaultOnly) {
-            const d = this._defaultSprite(item);
-            if (d) return d;
-            throw 0;
+            return this._defaultSprite(item);
           }
           const cs = main.FeatureRegistry?.getInstance?.("coloredSpikes");
           const cand = cs?._imageMap?.[this._unitTypeOf(item)]?.[0];
@@ -22755,7 +23119,7 @@ ctx.drawImage(p.ldb_label, 187 + wuyX, yPos);
           }
         } catch (e) {}
         try {
-          if (defaultOnly || Object.values(WALL_BY_MATERIAL).includes(item)) {
+          if (!defaultOnly && Object.values(WALL_BY_MATERIAL).includes(item)) {
             const ci = main.FeatureRegistry?.getInstance?.("chestInfo");
             const icon = ci?.get_image?.((item + 1) << 1);
             if (icon && icon.complete && icon.naturalWidth > 0) {
@@ -25803,6 +26167,7 @@ class Feature_AutoBuild extends CheatFeatureBase {
         "Swedish": "sv", "Turkish": "tr", "Ukrainian": "uk"
       };
       static MAX_LEN = 200;
+      static SENT_MAX_LEN = 100; // максимум длины своего сообщения для перевода (лимит игрового чата)
       static ENDPOINT = "https://translate.googleapis.com/translate_a/single";
 
       constructor(t) {
@@ -25867,6 +26232,11 @@ class Feature_AutoBuild extends CheatFeatureBase {
           document.addEventListener("keydown", e => {
             try { this._onChatEnterKey(e); } catch (err) {}
           }, true);
+          for (const evType of ["keypress", "keyup"]) {
+            document.addEventListener(evType, e => {
+              try { this._onChatEnterBlock(e); } catch (err) {}
+            }, true);
+          }
         }
 
         this._timer = CustomTimer.setInterval(() => {
@@ -25990,15 +26360,25 @@ class Feature_AutoBuild extends CheatFeatureBase {
         return false;
       }
 
+      // Как в SpriteX: перевод подставляется в поле ввода ДО того, как игра сама
+      // отправит сообщение. Игра рисует свой пузырь и шлёт пакет уже с переводом,
+      // мы не задерживаем ws.send и не трогаем пузырь.
       _onChatEnterKey(e) {
-        if (e.key !== "Enter" || !this._isTranslateSentEnabled()) return;
+        if (e.key !== "Enter" || e.__arctReplay) return;
         const el = e.target || document.activeElement;
         if (!el || (el.tagName !== "INPUT" && el.tagName !== "TEXTAREA")) return;
+        if (el.__arctPending) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return;
+        }
+        if (!this._isTranslateSentEnabled()) return;
         if (el.closest && el.closest("[id^='arct'], [class*='arct'], #azon-gui-container")) return;
 
         const rawText = String(el.value || "").trim();
-        if (rawText.length < 2 || rawText.length > Feature_Translator.MAX_LEN || !/\p{L}/u.test(rawText)) return;
-        if (/^[\/!]/.test(rawText) || rawText.toLowerCase().startsWith("drop") || rawText.includes(" > ")) return;
+        if (rawText.length < 2 || rawText.length > Feature_Translator.SENT_MAX_LEN || !/\p{L}/u.test(rawText)) return;
+        if (/^[\/!]/.test(rawText) || /^\s*drop(\s|$)/i.test(rawText) || rawText.includes(" > ")) return;
+        if (Date.now() < this._pausedUntil) return;
 
         this._chatInput = el;
         this._lastTyped = { el, text: rawText, at: Date.now() };
@@ -26007,15 +26387,105 @@ class Feature_AutoBuild extends CheatFeatureBase {
         const key = tl + "|" + rawText;
         const hit = this._cache.get(key);
 
-        if (hit && hit.text && !this._isSame(rawText, hit, tl)) {
-          let out = hit.text.trim();
+        if (hit) {
+          // перевод уже есть: подменяем текст, Enter идёт в игру как обычно
+          this._applySentTranslation(el, rawText, hit, tl);
+          return;
+        }
+
+        // перевода ещё нет: придерживаем Enter, переводим (до 1.5 с), затем повторяем Enter
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        el.__arctPending = true;
+        const orig = e;
+        this._translateTimed(rawText, tl, 1500)
+          .then(res => {
+            this._errStreak = 0;
+            if (this._cache.size > 300) this._cache.delete(this._cache.keys().next().value);
+            this._cache.set(key, res);
+            return res;
+          })
+          .catch(err => {
+            this._stat.errors++;
+            this._stat.lastError = String(err && err.message ? err.message : err);
+            if (++this._errStreak >= 3) {
+              this._pausedUntil = Date.now() + 30000;
+              this._errStreak = 0;
+            }
+            return null;
+          })
+          .then(res => {
+            el.__arctPending = false;
+            // если за время перевода текст изменили, отправляем то, что в поле
+            if (res && String(el.value || "").trim() === rawText) this._applySentTranslation(el, rawText, res, tl);
+            this._replayEnter(el, orig);
+          });
+      }
+
+      _onChatEnterBlock(e) {
+        if (e.key !== "Enter" || e.__arctReplay) return;
+        const el = e.target;
+        if (el && el.__arctPending) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }
+
+      _applySentTranslation(el, rawText, res, tl) {
+        if (res && res.text && !this._isSame(rawText, res, tl)) {
+          let out = res.text.trim();
           if (out.length > 100) out = out.slice(0, 100).replace(/\s+\S*$/, "") || out.slice(0, 100);
           if (out.length > 0) {
             el.value = out;
-            el.__arctPreTranslatedFrom = rawText;
-            el.__arctPreTranslatedTo = out;
+            this._stat.translated++;
           }
+        } else if (res) {
+          this._stat.skipped++;
         }
+      }
+
+      _replayEnter(el, orig, attempt) {
+        if (!el || !el.isConnected) return;
+        for (const type of ["keydown", "keypress", "keyup"]) {
+          const ev = new KeyboardEvent(type, {
+            key: "Enter", code: orig.code || "Enter", bubbles: true, cancelable: true, view: window,
+            shiftKey: !!orig.shiftKey, ctrlKey: !!orig.ctrlKey, altKey: !!orig.altKey, metaKey: !!orig.metaKey
+          });
+          try {
+            Object.defineProperty(ev, "keyCode", { get: () => 13 });
+            Object.defineProperty(ev, "which", { get: () => 13 });
+            Object.defineProperty(ev, "charCode", { get: () => (type === "keypress" ? 13 : 0) });
+          } catch (err) {}
+          ev.__arctReplay = true;
+          el.dispatchEvent(ev);
+        }
+        this._verifyReplay(el, orig, attempt || 0);
+      }
+
+      // Если игра проигнорировала повторный Enter (сообщение не ушло), повторяем Enter,
+      // а в крайнем случае отправляем пакет чата сами.
+      _verifyReplay(el, orig, attempt) {
+        const text = String(el.value || "").trim();
+        if (!text) return;
+        const aw = { text, sent: false };
+        this._awaitSend = aw;
+        setTimeout(() => {
+          try {
+            if (this._awaitSend !== aw) return;
+            if (aw.sent) { this._awaitSend = null; return; }
+            if (!el.isConnected || String(el.value || "").trim() !== text) { this._awaitSend = null; return; }
+            if (attempt < 1) {
+              this._replayEnter(el, orig, attempt + 1);
+              return;
+            }
+            this._awaitSend = null;
+            const ws = this._ws, ps = this._prevSend;
+            if (ws && ps && ws.readyState === WebSocket.OPEN && Number.isInteger(this._outOp)) {
+              ps.call(ws, JSON.stringify([this._outOp, text]));
+              el.value = "";
+            }
+          } catch (e) {}
+        }, 200);
       }
 
       _updateMyOwnBubble(origText, sentText) {
@@ -26066,13 +26536,13 @@ class Feature_AutoBuild extends CheatFeatureBase {
         if (this._chatInput && el !== this._chatInput) return;
 
         clearTimeout(this._typeTimer);
-        this._typeTimer = setTimeout(() => this._prefetch(text), 120);
+        this._typeTimer = setTimeout(() => this._prefetch(text), 80);
       }
 
       _prefetch(text) {
         const tl = this._sentCode();
-        if (text.length < 2 || text.length > Feature_Translator.MAX_LEN || !/\p{L}/u.test(text)) return;
-        if (/^[\/!]/.test(text) || text.toLowerCase().startsWith("drop") || text.includes(" > ")) return;
+        if (text.length < 2 || text.length > Feature_Translator.SENT_MAX_LEN || !/\p{L}/u.test(text)) return;
+        if (/^[\/!]/.test(text) || /^\s*drop(\s|$)/i.test(text) || text.includes(" > ")) return;
         if (Date.now() < this._pausedUntil) return;
         const key = tl + "|" + text;
         if (this._cache.has(key)) return;
@@ -26091,68 +26561,18 @@ class Feature_AutoBuild extends CheatFeatureBase {
         ]);
       }
 
+      // Исходящий пакет больше не задерживаем и не меняем (как в SpriteX): только запоминаем опкод чата.
       _interceptOutgoing(ws, prevSend, data) {
-        if (!this._isTranslateSentEnabled()) return false;
-        if ("string" !== typeof data || data.charCodeAt(0) !== 91 || data.length > 400) return false;
-        if (Date.now() < this._pausedUntil) return false;
-        let p;
-        try { p = JSON.parse(data); } catch (e) { return false; }
-        if (!Array.isArray(p) || p.length !== 2 || !Number.isInteger(p[0]) || "string" !== typeof p[1]) return false;
-        this._selfOps.add(p[0]);
-        this._outOp = p[0];
-
-        const text = p[1].trim();
-        if (this._lastTyped && this._lastTyped.text === text && Date.now() - this._lastTyped.at < 20000) {
-          this._chatInput = this._lastTyped.el;
+        try { this._onлегациOutgoing(data); } catch (e) {}
+        // отмечаем, что игра приняла повторный Enter и реально отправила сообщение
+        const aw = this._awaitSend;
+        if (aw && typeof data === "string" && data.charCodeAt(0) === 91 && data.length <= 400) {
+          try {
+            const p = JSON.parse(data);
+            if (Array.isArray(p) && p.length === 2 && Number.isInteger(p[0]) && typeof p[1] === "string" && p[1].trim() === aw.text) aw.sent = true;
+          } catch (e) {}
         }
-
-        if (this._chatInput && this._chatInput.__arctPreTranslatedTo === text) {
-          const origFrom = this._chatInput.__arctPreTranslatedFrom || text;
-          this._chatInput.__arctPreTranslatedTo = null;
-          this._chatInput.__arctPreTranslatedFrom = null;
-          this._onлегациOutgoing(data);
-          return false;
-        }
-
-        if (
-          text.length < 2 ||
-          text.length > Feature_Translator.MAX_LEN ||
-          !/\p{L}/u.test(text) ||
-          /^[\/!]/.test(text) ||
-          text.toLowerCase().startsWith("drop")
-        ) {
-          return false;
-        }
-
-        this._onлегациOutgoing(data);
-
-        const tl = this._sentCode();
-        const entry = { ws, prevSend, op: p[0], text, orig: data, out: data, done: false, t0: Date.now() };
-        this._sendQ.push(entry);
-
-        const key = tl + "|" + text;
-        const hit = this._cache.get(key);
-        if (hit) {
-          this._finishSend(entry, hit, tl);
-          return true;
-        }
-        this._translateTimed(text, tl, 1800)
-          .then(res => {
-            this._errStreak = 0;
-            if (this._cache.size > 300) this._cache.delete(this._cache.keys().next().value);
-            this._cache.set(key, res);
-            this._finishSend(entry, res, tl);
-          })
-          .catch(err => {
-            this._stat.errors++;
-            this._stat.lastError = String(err && err.message ? err.message : err);
-            if (++this._errStreak >= 3) {
-              this._pausedUntil = Date.now() + 30000;
-              this._errStreak = 0;
-            }
-            this._finishSend(entry, null, tl);
-          });
-        return true;
+        return false;
       }
 
       _finishSend(entry, res, tl) {
@@ -26200,6 +26620,7 @@ class Feature_AutoBuild extends CheatFeatureBase {
         if (!ws.__arctChatSniff && typeof ws.send === "function") {
           ws.__arctChatSniff = true;
           const prevSend = ws.send, self = this;
+          this._prevSend = prevSend;
           ws.send = function (data) {
             try {
               if (self._interceptOutgoing(ws, prevSend, data)) return;
@@ -26395,6 +26816,468 @@ class Feature_AutoBuild extends CheatFeatureBase {
         } finally {
           if (timer) clearTimeout(timer);
         }
+      }
+    }
+    // Farm Report: пока включён Auto Farm, раз в 10 с пишет в игровой чат, сколько урожая собрано
+    // за время работы (формат berry:1000|tomato:500). Считаются только приросты урожая в инвентаре
+    // при включённом Auto Farm; убыль (еда, дроп) не вычитается.
+    class Feature_FarmReport extends CheatFeatureBase {
+      static id = "farmReport";
+      static category = Ye;
+      static enabled = false;
+      static INTERVAL_MS = 10000;
+      static MAX_LEN = 100;
+
+      constructor(t) {
+        super(t);
+        this._timer = null;
+        this._ws = null;
+        this._op = null;
+        this._enterAt = 0;
+        this._hooked = false;
+        this._ownSend = false;
+        this._prev = null;
+        this._gain = new Map();
+        this._lastSendAt = 0;
+        this._lastMsg = "";
+      }
+
+      _crops() {
+        return [
+          [Items.PLANT, "berry"], [Items.CARROT, "carrot"], [Items.TOMATO, "tomato"],
+          [Items.PUMPKIN, "pumpkin"], [Items.WATERMELON, "watermelon"], [Items.GARLIC, "garlic"],
+          [Items.ALOE_VERA, "aloe"], [Items.WILD_WHEAT, "wheat"]
+        ];
+      }
+
+      init() {
+        super.init();
+        if (!this._hooked) {
+          this._hooked = true;
+          document.addEventListener("keydown", e => {
+            if (e.key === "Enter") this._enterAt = Date.now();
+          }, true);
+        }
+        this._timer = CustomTimer.setInterval(() => {
+          try { this._attach(); this._tick(); } catch (e) {}
+        }, 1000);
+      }
+
+      setEnabled(t) {
+        const was = this.enabled;
+        super.setEnabled(t);
+        if (t && !was) {
+          this._gain.clear();
+          this._prev = null;
+          this._lastSendAt = Date.now();
+          this._lastMsg = "";
+        }
+      }
+
+      // Узнаём опкод игрового чата по твоему собственному сообщению (пакет [опкод, "текст"] сразу после Enter)
+      _attach() {
+        const ws = this.main.client?.["socket"];
+        if (!ws || ws === this._ws || typeof ws.send !== "function") return;
+        this._ws = ws;
+        if (ws.__arctFarmReportSniff) return;
+        ws.__arctFarmReportSniff = true;
+        const prevSend = ws.send, self = this;
+        ws.send = function (data) {
+          try { self._sniff(data); } catch (e) {}
+          return prevSend.apply(this, arguments);
+        };
+      }
+
+      _sniff(data) {
+        if (this._ownSend || typeof data !== "string" || data.charCodeAt(0) !== 91 || data.length > 400) return;
+        if (Date.now() - this._enterAt > 1500) return;
+        let p;
+        try { p = JSON.parse(data); } catch (e) { return; }
+        if (Array.isArray(p) && p.length === 2 && Number.isInteger(p[0]) && typeof p[1] === "string" && p[1].length <= 100) this._op = p[0];
+      }
+
+      _snapshot() {
+        const n = this.main.user?.inv?.n;
+        if (!n) return null;
+        const m = new Map();
+        for (const [id] of this._crops()) m.set(id, 0 | n[id]);
+        return m;
+      }
+
+      _buildMessage() {
+        const names = new Map(this._crops());
+        const list = [...(this._prev || new Map()).entries()].filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1]);
+        let out = "";
+        for (const [id, c] of list) {
+          const part = names.get(id) + ":" + fmtResCount(c);
+          const next = out ? out + "|" + part : part;
+          if (next.length > Feature_FarmReport.MAX_LEN) break;
+          out = next;
+        }
+        return out;
+      }
+
+      _sendChat(text) {
+        const ws = this.main.client?.["socket"];
+        if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+        const tr = this.main.FeatureRegistry?.getInstance?.("translateReceived");
+        const op = Number.isInteger(this._op) ? this._op : (Number.isInteger(window.__arctChatOp) ? window.__arctChatOp : (Number.isInteger(tr?._outOp) ? tr._outOp : 32));
+        this._ownSend = true;
+        try { ws.send(JSON.stringify([op, text])); } finally { this._ownSend = false; }
+        // сервер не присылает отправителю эхо: свой пузырь над головой рисуем сами (как делает переводчик)
+        this._lastOwnShown = this._showOwn(text);
+        return true;
+      }
+
+      // Показать своё сообщение у себя: пузырь над игроком, а если не вышло - через игровой обработчик входящего чата
+      _showOwn(text) {
+        try {
+          const m = this.main;
+          const tr = m.FeatureRegistry?.getInstance?.("translateReceived");
+          const myId = m.user?.id;
+          if (!tr || !Number.isInteger(myId)) return false;
+          const u = tr._findPlayerUnit ? tr._findPlayerUnit(myId) : null;
+          if (u && tr._pushUnitChatBubble && tr._pushUnitChatBubble(u, text)) return true;
+          if (typeof tr._chatFn === "function") {
+            const ops = tr._chatOps ? [...tr._chatOps] : [];
+            const pkt = [ops.length ? ops[0] : 0, myId, text];
+            pkt.__arctTranslated = true;
+            tr._chatFn(pkt);
+            return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+
+      _tick() {
+        if (!this.enabled) return;
+        const m = this.main;
+        if (!m.is_game_running() || !m.user?.alive) { this._prev = null; return; }
+        const snap = this._snapshot();
+        if (!snap) return;
+        const farming = Boolean(m.SettingsManager?.get("autoFarm"));
+        if (this._prev && farming) {
+          for (const [id, c] of snap) {
+            const d = c - (this._prev.get(id) || 0);
+            if (d > 0) this._gain.set(id, (this._gain.get(id) || 0) + d);
+          }
+        }
+        this._prev = snap;
+        const now = Date.now();
+        if (!farming || now - this._lastSendAt < Feature_FarmReport.INTERVAL_MS) return;
+        const msg = this._buildMessage();
+        if (!msg || msg === this._lastMsg) return;
+        if (this._sendChat(msg)) {
+          this._lastMsg = msg;
+          this._lastSendAt = now;
+        }
+      }
+    }
+    // Chest Loot Report: всегда (и при ручной игре, и с Auto Treasure) пишет в чат, что выпало из сундука,
+    // который ты вскрыл. Сундук считается вскрытым тобой, если он пропал из мира, когда ты стоял рядом.
+    // Формат: treasure chest loot:PLOT x1|CROWN_BLUE x1
+    class Feature_ChestLootReport extends CheatFeatureBase {
+      static id = "autoTreasureLootReport";
+      static category = Ye;
+      static enabled = false;
+      static RANGE = 320;        // сундук должен быть не дальше этого, когда пропал
+      static WINDOW_MS = 900;    // сколько следим за инвентарём ПОСЛЕ исчезновения сундука
+      static LOOKBACK_MS = 450;  // и сколько смотрим назад: лут приходит чуть раньше, чем сундук пропадает из мира
+      static TICK_MS = 100;
+
+      constructor(t) {
+        super(t);
+        this._timer = null;
+        this._prevNear = [];
+        this._prevInv = null;
+        this._rep = null;
+        this._names = null;
+      }
+
+      init() {
+        super.init();
+        this._timer = CustomTimer.setInterval(() => {
+          try { this._tick(); } catch (e) {}
+        }, Feature_ChestLootReport.TICK_MS);
+      }
+
+      setEnabled(t) {
+        super.setEnabled(t);
+        if (!t) this._reset();
+      }
+
+      _reset() {
+        this._prevNear = [];
+        this._prevInv = null;
+        this._rep = null;
+        this._hist = [];
+      }
+
+      _tot(inv) { let n = 0; for (const c of inv.values()) n += c; return n; }
+
+      // предметы/юниты рядом (диагностика: куда девается лут)
+      _unitsNear(me) {
+        const out = [];
+        try {
+          const U = this.main.world?.units;
+          if (!U) return out;
+          for (const t of Object.keys(U)) {
+            const arr = U[t];
+            if (!Array.isArray(arr)) continue;
+            for (const u of arr) {
+              const p = u ? this._pos(u) : null;
+              if (!p) continue;
+              const d = Math.hypot(p.x - me.x, p.y - me.y);
+              if (d <= 250 && u !== me) out.push("t" + t + (u.id != null ? "/id" + u.id : "") + " d" + Math.round(d));
+            }
+          }
+        } catch (e) {}
+        return out.slice(0, 14);
+      }
+
+      _inv() {
+        const n = this.main.user?.inv?.n;
+        const out = new Map();
+        if (!n) return out;
+        for (const [k, raw] of Object.entries(n)) {
+          const c = typeof raw === "number" ? raw : (raw?.n ?? raw?.count ?? 0);
+          if (c > 0) out.set(Number(k), c);
+        }
+        return out;
+      }
+
+      // позиция юнита: серверная (r) приоритетнее, как в Auto Treasure
+      _pos(u) {
+        const x = u?.r?.x ?? u?.x, y = u?.r?.y ?? u?.y;
+        return (typeof x === "number" && typeof y === "number") ? { x, y } : null;
+      }
+
+      _same(a, b) {
+        return a === b || (a.id != null && b.id != null && a.id === b.id && a.pid === b.pid);
+      }
+
+      // Печать в обход блокировки console.log игрой: console.context -> консоль скрытого iframe
+      // (фильтр в DevTools: "arct-chestloot"). Выключить: window.arctChestDebug = false
+      _dbg(text) {
+        if (window.arctChestDebug === false) return;
+        const line = "[ARCT-CHESTLOOT] " + text;
+        try {
+          const c = console.context && console.context("arct-chestloot");
+          if (c) { c.log(line); return; }
+        } catch (e) {}
+        try {
+          if (!this._dbgFrame) {
+            const f = document.createElement("iframe");
+            f.style.display = "none";
+            (document.documentElement || document.body).appendChild(f);
+            this._dbgFrame = f;
+          }
+          this._dbgFrame.contentWindow.console.log(line);
+        } catch (e) {}
+      }
+
+      _report(msg) {
+        const m = this.main;
+        const ws0 = m.client?.socket;
+        const tr0 = m.FeatureRegistry?.getInstance?.("translateReceived");
+        const fr0 = m.FeatureRegistry?.getInstance?.("farmReport");
+        this._dbg("send: " + msg + " | ws=" + (ws0 ? ws0.readyState : "none") + " farmOp=" + fr0?._op + " trOp=" + tr0?._outOp + " sharedOp=" + window.__arctChatOp);
+        try {
+          const fr = m.FeatureRegistry?.getInstance?.("farmReport");
+          if (fr && typeof fr._sendChat === "function") {
+            const okF = fr._sendChat(msg);
+            this._dbg("farmReport._sendChat -> " + okF + ", own bubble shown: " + fr._lastOwnShown);
+            if (okF) return true;
+          } else {
+            this._dbg("farmReport instance not found, fallback to own send");
+          }
+        } catch (e) { this._dbg("farmReport._sendChat threw: " + (e && e.message || e)); }
+        const ws = m.client?.socket;
+        if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+        const tr = m.FeatureRegistry?.getInstance?.("translateReceived");
+        const op = Number.isInteger(window.__arctChatOp) ? window.__arctChatOp : (Number.isInteger(tr?._outOp) ? tr._outOp : 32);
+        try {
+          ws.send(JSON.stringify([op, msg]));
+          try { this._dbg("own bubble shown: " + !!m.FeatureRegistry?.getInstance?.("farmReport")?._showOwn?.(msg)); } catch (e) {}
+          return true;
+        } catch (e) { return false; }
+      }
+
+      _itemName(id) {
+        if (!this._names) {
+          this._names = new Map();
+          for (const [k, v] of Object.entries(Items)) if (!this._names.has(v)) this._names.set(v, k);
+        }
+        return this._names.get(id) || ("item" + id);
+      }
+
+      _tick() {
+        if (!this.enabled) return;
+        const m = this.main;
+        const me = m.is_game_running() ? m.get_local_player() : null;
+        if (!me || !m.user?.alive) { this._reset(); return; }
+        const now = performance.now();
+        const chests = m.world?.units?.[Ft] ?? [];
+
+        // вскрытие: сундук, который был рядом в прошлый тик, пропал из мира
+        if (this._prevNear.length && this._prevInv) {
+          const gone = this._prevNear.some(t => !chests.some(c => c && this._same(c, t)));
+          if (gone) {
+            // лут может прийти в инвентарь РАНЬШЕ, чем сундук пропадёт из мира -> база = самый старый снимок за ~2.5 с,
+            // сделанный пока сундук был рядом
+            const hist = (this._hist || []).filter(h => now - h.t <= Feature_ChestLootReport.LOOKBACK_MS);
+            const base = hist.length ? hist[0].inv : this._prevInv;
+            this._rep = { base, gain: new Map(), until: now + Feature_ChestLootReport.WINDOW_MS };
+            this._dbg("chest disappeared near you -> watching inventory. items base=" + this._tot(base) + " now=" + this._tot(this._inv()) + " (history " + hist.length + " snaps)");
+            this._dbg("units within 250px: " + JSON.stringify(this._unitsNear(me)));
+          }
+        }
+
+        // сундуки рядом + снимок инвентаря на этот тик
+        const R = Feature_ChestLootReport.RANGE;
+        const near = [];
+        for (const c of chests) {
+          const cp = c ? this._pos(c) : null;
+          if (cp && Math.hypot(cp.x - me.x, cp.y - me.y) <= R) near.push(c);
+        }
+        const sig = chests.length + "/" + near.length;
+        if (sig !== this._dbgSig) {
+          this._dbgSig = sig;
+          this._dbg("chests in world: " + chests.length + ", within " + R + "px: " + near.length);
+        }
+        this._prevNear = near;
+        this._prevInv = near.length ? this._inv() : null;
+        if (near.length) {
+          (this._hist || (this._hist = [])).push({ t: now, inv: this._prevInv });
+          while (this._hist.length && now - this._hist[0].t > 1000) this._hist.shift();
+        } else if (!this._rep) {
+          this._hist = [];
+        }
+
+        // окно после вскрытия: максимальный прирост каждого предмета
+        const r = this._rep;
+        if (!r) return;
+        for (const [id, c] of this._inv()) {
+          const d = c - (r.base.get(id) || 0);
+          if (d > 0 && d > (r.gain.get(id) || 0)) r.gain.set(id, d);
+        }
+        if (now < r.until) return;
+        this._rep = null;
+        if (!r.gain.size) {
+          this._dbg("window ended: inventory did not grow (base=" + this._tot(r.base) + " now=" + this._tot(this._inv()) + "), nothing to report");
+          this._dbg("units within 250px: " + JSON.stringify(this._unitsNear(me)));
+          return;
+        }
+        // формат: treasure chest|garlicseed:1|crownblue:1
+        let msg = "treasure chest";
+        let first = true;
+        for (const [id, c] of [...r.gain.entries()].sort((a, b) => b[1] - a[1])) {
+          const next = msg + "|" + String(this._itemName(id)).toLowerCase().replace(/[^a-z0-9]/g, "") + ":" + c;
+          if (next.length > 100) break;
+          msg = next;
+          first = false;
+        }
+        if (first) return;
+        this._report(msg);
+      }
+    }
+    // Macro Report: пока работает Path Macro, раз в 10 с пишет в игровой чат, сколько собрано ресурсов из списка дропа
+    // макроса (MACRO_DROP_ITEMS: wood, stone, gold, ... watermelon). Формат: macro|wood:120|stone:40. Если список не влезает
+    // в 100 символов чата, уходит несколькими сообщениями. Считаются только приросты при включённом макросе.
+    class Feature_MacroReport extends CheatFeatureBase {
+      static id = "macroReport";
+      static category = Ye;
+      static enabled = false;
+      static INTERVAL_MS = 10000;
+      static MAX_LEN = 100;
+      static CHUNK_GAP_MS = 1500;
+
+      constructor(t) {
+        super(t);
+        this._timer = null;
+        this._prev = null;
+        this._gain = new Map();
+        this._lastSendAt = 0;
+        this._lastSig = "";
+      }
+
+      init() {
+        super.init();
+        this._timer = CustomTimer.setInterval(() => {
+          try { this._tick(); } catch (e) {}
+        }, 1000);
+      }
+
+      setEnabled(t) {
+        const was = this.enabled;
+        super.setEnabled(t);
+        if (t && !was) {
+          this._gain.clear();
+          this._prev = null;
+          this._lastSendAt = Date.now();
+          this._lastSig = "";
+        }
+      }
+
+      _snapshot() {
+        const n = this.main.user?.inv?.n;
+        if (!n) return null;
+        const m = new Map();
+        for (const it of MACRO_DROP_ITEMS) m.set(it.id, 0 | n[it.id]);
+        return m;
+      }
+
+      _buildMessages() {
+        const names = new Map(MACRO_DROP_ITEMS.map(it => [it.id, String(it.name).replace(/\s+/g, "")]));
+        const list = [...(this._prev || new Map()).entries()].filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1]);
+        const out = [];
+        let cur = "macro";
+        for (const [id, c] of list) {
+          const part = "|" + names.get(id) + ":" + fmtResCount(c);
+          if (cur.length + part.length > Feature_MacroReport.MAX_LEN) {
+            if (cur !== "macro") out.push(cur);
+            cur = "macro";
+          }
+          cur += part;
+        }
+        if (cur !== "macro") out.push(cur);
+        return out;
+      }
+
+      _send(text) {
+        try {
+          const fr = this.main.FeatureRegistry?.getInstance?.("farmReport");
+          return !!(fr && typeof fr._sendChat === "function" && fr._sendChat(text));
+        } catch (e) { return false; }
+      }
+
+      _tick() {
+        if (!this.enabled) return;
+        const m = this.main;
+        if (!m.is_game_running() || !m.user?.alive) { this._prev = null; return; }
+        const snap = this._snapshot();
+        if (!snap) return;
+        const macroOn = Boolean(m.FeatureRegistry?.getInstance?.("macro")?.enabled || m.SettingsManager?.get("macro"));
+        if (this._prev && macroOn) {
+          for (const [id, c] of snap) {
+            const d = c - (this._prev.get(id) || 0);
+            if (d > 0) this._gain.set(id, (this._gain.get(id) || 0) + d);
+          }
+        }
+        this._prev = snap;
+        const now = Date.now();
+        if (!macroOn || now - this._lastSendAt < Feature_MacroReport.INTERVAL_MS) return;
+        if (!this._gain.size) return;
+        const sig = JSON.stringify([...this._prev.entries()]);
+        if (sig === this._lastSig) return;
+        const msgs = this._buildMessages();
+        if (!msgs.length) return;
+        this._lastSig = sig;
+        this._lastSendAt = now;
+        msgs.forEach((t, i) => {
+          if (i === 0) this._send(t);
+          else CustomTimer.setTimeout(() => { try { this._send(t); } catch (e) {} }, i * Feature_MacroReport.CHUNK_GAP_MS);
+        });
       }
     }
     // Room Report: присылает в Discord-вебхук список игроков вашей комнаты (ник, уровень, опыт)
@@ -29593,6 +30476,7 @@ class Feature_AutoBuild extends CheatFeatureBase {
           return;
         }
 
+        this._safeHold = false;
         if (!n) {
           return this.#_p2t(e);
         }
@@ -29722,11 +30606,13 @@ class Feature_AutoBuild extends CheatFeatureBase {
         }
         const dx = safeSpot.x - e.x,
           dy = safeSpot.y - e.y;
-        const fpSw = this.#_pfStep(e, safeSpot.x, safeSpot.y);
-        this.#_p2q(e, fpSw.x, fpSw.y, 18, false);
-        // Уже на месте — перестаём бить
-        if (Math.abs(dx) <= 18 && Math.abs(dy) <= 18) {
+        // Дошли до Safe Point: просто стоим - не двигаемся и не бьём. Гистерезис: пришли в зону 18 px, а дальше держимся
+        // на месте, пока нас не оттолкнуло дальше 60 px (иначе бот дёргался туда-сюда на границе зоны)
+        const dist = Math.hypot(dx, dy);
+        if (this._safeHold ? dist <= 60 : (Math.abs(dx) <= 18 && Math.abs(dy) <= 18)) {
+          this._safeHold = true;
           this._angle = null;
+          this._fpPath = null;
           if (this._attacking) {
             this._attacking = false;
             this._lastAttack = 0;
@@ -29734,8 +30620,12 @@ class Feature_AutoBuild extends CheatFeatureBase {
               this.main.client.stop_attack();
             } catch {}
           }
+          this.#_p2s(0);
           return;
         }
+        this._safeHold = false;
+        const fpSw = this.#_pfStep(e, safeSpot.x, safeSpot.y);
+        this.#_p2q(e, fpSw.x, fpSw.y, 18, false);
         const ang = Math.atan2(dy, dx),
           now = performance.now();
         this._angle = ang;
@@ -29823,6 +30713,7 @@ class Feature_AutoBuild extends CheatFeatureBase {
       }
 
       #_p2t(t) {
+        this._safeHold = false;
         if (0 !== this._lastDir && (this._lastDir = 0, sendInstantMovePacket(this.main, 0)), this._attacking) {
           this._attacking = false;
           this._lastAttack = 0;
@@ -29992,6 +30883,8 @@ class Feature_AutoBuild extends CheatFeatureBase {
       static macroSkipStuck = true;       // пропускать точку, если застрял
       static macroSmoothAngles = false;   // плавно доворачивать угол к записанному углу/удару вместо мгновенного
       static macroShowPath = true;        // рисовать маршрут, даже когда макрос выключен
+      static macroEnemyStop = false;      // враг рядом: встать на месте и бить (маршрут на паузе)
+      static macroEnemyRange = 600;       // радиус, в котором враг считается «рядом»
       static macroAddKey = "KeyN";
       static macroAddAttackKey = "NONE";
       static macroUndoKey = "KeyM";
@@ -30446,6 +31339,31 @@ class Feature_AutoBuild extends CheatFeatureBase {
         return this._smoothAng;
       }
 
+      // Ближайший враг в радиусе Enemy Range (Stop When Enemy Near). Свои/тимейты и игроки из белого списка Auto Farm не считаются.
+      _enemyTarget(me, pos) {
+        const sm = this.main.SettingsManager;
+        const rangeRaw = Number(sm.get("macroEnemyRange"));
+        const range = Number.isFinite(rangeRaw) && rangeRaw > 0 ? rangeRaw : 600;
+        const teamOk = sm.get("macroEnemyTeamOk") !== false;
+        const wl = String(sm.get("macroEnemyWhitelist") || "")
+          .split(/[,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+        const players = this.main.world?.units?.[A] ?? [];
+        let best = null, bd = range * range;
+        for (const p of players) {
+          if (!p || p === me || p.ghost || p.pid == null || p.pid === me.pid) continue;
+          if (teamOk && isAlly(p.pid, this.main)) continue;
+          if (wl.length) {
+            const info = this.main.world?.players?.[p.pid];
+            const first = info ? Object.values(info)[0] : null;
+            const nick = String((typeof first === "string" ? first : info?.nickname) || "").toLowerCase();
+            if (wl.includes(String(p.pid)) || (nick && wl.includes(nick))) continue;
+          }
+          const dx = p.x - pos.x, dy = p.y - pos.y, d = dx * dx + dy * dy;
+          if (d <= bd) { bd = d; best = p; }
+        }
+        return best;
+      }
+
       _tick() {
         if (!this.enabled) {
           return;
@@ -30473,6 +31391,44 @@ class Feature_AutoBuild extends CheatFeatureBase {
           return void S.set("macro", false);
         }
         const pos = this._pos(me);
+
+        // Stop When Enemy Near: видим врага - встаём на месте и бьём в его сторону; маршрут на паузе
+        // (индекс точки не двигается), как только враг ушёл - идём дальше с того же места
+        if (S.get("macroEnemyStop")) {
+          const foe = this._enemyTarget(me, pos);
+          if (foe) {
+            if (!this._enemyHold || !Number.isFinite(this._holdAng)) {
+              const hp = this._path[this._idx];
+              this._holdAng = hp ? Math.atan2(hp.y - pos.y, hp.x - pos.x) : (Number.isFinite(this._angle) ? this._angle : 0);
+            }
+            const eang = this._holdAng; // бьём в одну и ту же точку, а не в сторону врага
+            this._enemyHold = true;
+            this._sector = -1;
+            this._stuckAt = 0;
+            this._angle = eang;
+            this._sendMove(0);
+            this._flash("Macro: enemy near - holding position");
+            if (document.hidden) {
+              this._bgActions(eang, true, true);
+              return;
+            }
+            const nowE = performance.now();
+            this._attacking = true;
+            if (nowE - this._lastAttack >= MACRO_ATTACK_DELAY) {
+              this._lastAttack = nowE;
+              try {
+                main.client.send_attack(eang);
+              } catch {}
+            }
+            return;
+          }
+          if (this._enemyHold) {
+            this._enemyHold = false;
+            this._holdAng = null;
+            this._stuckAt = 0;
+          }
+        }
+
         if (this._pickStart) {
           this._pickStart = false;
           this._dir = 1;
@@ -31962,6 +32918,9 @@ class Feature_RenderingList extends CheatFeatureBase {
       Feature_Translator: () => Feature_Translator,
       Feature_AntiMute: () => Feature_AntiMute,
       Feature_RoomReport: () => Feature_RoomReport,
+      Feature_FarmReport: () => Feature_FarmReport,
+      Feature_ChestLootReport: () => Feature_ChestLootReport,
+      Feature_MacroReport: () => Feature_MacroReport,
       Feature_TotemOnMap: () => Feature_TotemOnMap,
       Feature_DeathOnMap: () => Feature_DeathOnMap,
       Feature_PlayerRadar: () => Feature_PlayerRadar,
@@ -32669,6 +33628,9 @@ for (const [e, n] of Object.entries(t)) {
     ["Feature_AntiMute", () => Feature_AntiMute],
     ["Feature_ClipRecorder", () => Feature_ClipRecorder],
     ["Feature_RoomReport", () => Feature_RoomReport],
+    ["Feature_FarmReport", () => Feature_FarmReport],
+    ["Feature_ChestLootReport", () => Feature_ChestLootReport],
+    ["Feature_MacroReport", () => Feature_MacroReport],
     ["Feature_VoiceChat", () => Feature_VoiceChat],
   ];
 
